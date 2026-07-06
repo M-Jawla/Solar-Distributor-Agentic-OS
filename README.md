@@ -4,7 +4,7 @@ An enterprise-grade, multi-agent AI system designed for solar distributors. The 
 
 ---
 
-## 🏗️ Architecture Overview
+## 1. Architecture Overview
 
 The system consists of a central **SolarOrchestrator** acting as a stateful router coordinating three specialized agents:
 1. **TriageAgent:** Ingests raw customer emails or chat transcripts and extracts structured project parameters.
@@ -15,7 +15,7 @@ Memory tracking is managed via an `InMemoryContextBank` that stores all variable
 
 ---
 
-## 🚀 Installation & Setup
+##2. Installation & Setup
 
 1. **Verify Python Installation:**
    Ensure Python 3.10 or later is installed.
@@ -49,7 +49,7 @@ Memory tracking is managed via an `InMemoryContextBank` that stores all variable
 
 ---
 
-## ⚡ Running the System
+## 3. Running the System
 
 Execute the test suite to run the pre-configured scenarios:
 ```bash
@@ -65,7 +65,7 @@ This runs the system through 5 test payloads representing:
 
 ---
 
-## 📂 Test Payloads
+## 5. Test Payloads
 
 To test the system interactively or feed in custom payloads, pass customer messages to `orchestrator.receive_query(message)`.
 
