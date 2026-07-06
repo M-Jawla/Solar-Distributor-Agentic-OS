@@ -15,81 +15,72 @@ Memory tracking is managed via an `InMemoryContextBank` that stores all variable
 
 ---
 
-##2. Installation & Setup
+## 2. Interactive Presentation Dashboard (`presentation_dashboard.html`)
+
+The repository includes a responsive companion HTML/JS dashboard (`presentation_dashboard.html`) designed for full frontend visualization. It functions locally entirely inside any standard web browser without requiring a backend runtime server.
+
+### Features:
+* **Presentation Deck:** An integrated slide deck outlining business friction points, multi-agent router topologies, tool math formulas, and pre-flight guardrail thresholds.
+* **Live Interactive Pipeline Simulator:** Simulates agent processing transitions (`TriageAgent` ➔ `TechnicalAgent` ➔ `FinancialLogisticsAgent`) across pre-configured user study cases.
+* **Dynamic Visual Sizing & Charts:** Renders physical panel layouts over roof areas, populates a warehouse stock ledger, and compiles canvas-driven 25-year cumulative ROI curve graphics.
+* **Active Execution Guardrails:** Emulates active pipeline halting and outputs a high-visibility, localized `SYSTEM GUARDRAIL ALERT` layout if anomalous data (e.g., negative area metrics or out-of-stock thresholds) is passed into the system.
+
+---
+
+## 3. Installation & Setup
 
 1. **Verify Python Installation:**
    Ensure Python 3.10 or later is installed.
 
-2. **Clone / Download Code:**
-   Ensure you have the following files in your workspace directory:
+2. **Download Code Repository Assets:**
+   Ensure you have the following core files in your workspace directory:
    - `solar_tools.py` (Deterministic math models)
    - `agent_core.py` (Agent routing & memory code)
    - `main.py` (Test execution script)
+   - `presentation_dashboard.html` (Interactive Presentation UI)
 
 3. **Install Dependencies:**
    Install required Python packages:
    ```bash
    pip install google-genai pydantic
-   ```
+Set Up Gemini API Key (Optional but Recommended):
+The agents run out of the box using a local regex parameter extractor and fallback markdown generators if no API key is present. To enable live AI extraction and proposal generation via Gemini 2.5 Flash, export your API key:
 
-4. **Set Up Gemini API Key (Optional but Recommended):**
-   The agents run out of the box using a local regex parameter extractor and fallback markdown generators if no API key is present. To enable live AI extraction and proposal generation via Gemini 2.5 Flash, export your API key:
-   * **Windows (Command Prompt):**
-     ```cmd
-     set GEMINI_API_KEY=your_api_key_here
-     ```
-   * **Windows (PowerShell):**
-     ```powershell
-     $env:GEMINI_API_KEY="your_api_key_here"
-     ```
-   * **Linux/macOS:**
-     ```bash
-     export GEMINI_API_KEY="your_api_key_here"
-     ```
+Windows (Command Prompt):
 
----
+DOS
+set GEMINI_API_KEY=your_api_key_here
+Windows (PowerShell):
 
-## 3. Running the System
+PowerShell
+$env:GEMINI_API_KEY="your_api_key_here"
+Linux/macOS:
 
-Execute the test suite to run the pre-configured scenarios:
-```bash
+Bash
+export GEMINI_API_KEY="your_api_key_here"
+
+Running the System
+Running the Python Backend Test Suite:
+Execute the test suite locally to process sample customer inquiries and validation limits:
+
+Bash
 python main.py
-```
+This runs the system through 5 distinct test payloads representing standard ingestion, multi-turn modifications, negative areas, roof constraints, and supply limits.
 
-This runs the system through 5 test payloads representing:
-1. **Happy Path:** standard ingestion ( Austin, TX setup).
-2. **Multi-Turn Sizing Edit:** customer updates target size from 6kW to 8kW midway.
-3. **Negative Area Guardrail:** catches anomalous negative roof space input.
-4. **Footprint Shortfall Guardrail:** catches a 15kW capacity request forced onto a tiny 300 sq. ft. roof.
-5. **Supply Chain Guardrail:** blocks commercial-scale requests (>60kW) that exceed the standard 150-panel warehouse allocation.
+Running the Frontend UI:
+Right-click on presentation_dashboard.html and choose Open With ➔ select your preferred web browser (Chrome, Edge, Safari, or Firefox). You can view the full slide deck and test scenarios immediately without launching a terminal execution window.
 
----
+4. Test Scenarios Covered
+To test the system interactively or evaluate performance, the suite leverages these sample customer data flows:
 
-## 5. Test Payloads
+Happy Path Ingestion: A standard message details an Austin, TX installation request with valid footprint and pricing requirements.
 
-To test the system interactively or feed in custom payloads, pass customer messages to `orchestrator.receive_query(message)`.
+Multi-Turn Sizing Edit: A follow-up request dynamically updates target system capacity from 6kW to 8kW midway, updating the context bank and recalculating billing metrics.
 
-### Payload 1: Happy Path Ingestion
-```text
-Dear Solar Distributor, I am looking to install a solar setup at my house in Austin, Texas. My roof is roughly 600 sq ft. I pay $0.18/kWh to the utility and use about 12,000 kWh annually. I want a 6.0 kW system capacity. My budget is $20,000.
-```
+Negative Area Guardrail: Intercepts a physical input anomaly where the user reports a negative roof space value (-400 sq ft).
 
-### Payload 2: Multi-Turn Sizing Update
-```text
-Actually, my neighbor said I should get an 8.0 kW system instead. Can we update the capacity to 8.0 kW and recalculate the ROI and Bill of Materials?
-```
+Footprint Shortfall Guardrail: Halts execution when a massive 15.0 kW system footprint physically cannot fit inside a tiny 300 sq ft roof limitation.
 
-### Payload 3: Physical Anomaly (Negative Sizing)
-```text
-Hello, I need a standard 5.0 kW solar capacity system, but my roof area is -400 sq ft. Please send a quote.
-```
+Supply Chain Guardrail: Blocks commercial-scale installations (>60kW) that break past standard warehouse inventory limits.
 
-### Payload 4: Footprint Shortfall
-```text
-Hi, I want a large 15.0 kW solar capacity system. My roof space is only 300 sq ft. I pay $0.22/kWh and use 20,000 kWh annually. Can you build this?
-```
-
-### Payload 5: Sourcing Limit Exceeded
-```text
-Good afternoon. We need a commercial 70.0 kW system for our warehouse in San Jose. We have plenty of space (10,000 sq ft) and a budget of $150,000. Send over the invoice.
-```
+***
