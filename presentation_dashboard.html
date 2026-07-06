@@ -1,0 +1,2026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Multi-Agent Sizing & Sourcing System Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-base: #080b11;
+            --bg-surface: #101524;
+            --bg-surface-elevated: #161e33;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.16);
+            
+            --color-primary: #3b82f6;      /* Blue */
+            --color-triage: #8b5cf6;       /* Violet / Purple */
+            --color-tech: #06b6d4;         /* Cyan */
+            --color-finance: #f59e0b;      /* Amber */
+            --color-danger: #ef4444;       /* Rose */
+            --color-success: #10b981;      /* Emerald */
+            --color-text-main: #f3f4f6;
+            --color-text-muted: #9ca3af;
+            
+            --glow-primary: 0 0 15px rgba(59, 130, 246, 0.35);
+            --glow-triage: 0 0 15px rgba(139, 92, 246, 0.35);
+            --glow-tech: 0 0 15px rgba(6, 182, 212, 0.35);
+            --glow-finance: 0 0 15px rgba(245, 158, 11, 0.35);
+            --glow-danger: 0 0 15px rgba(239, 68, 68, 0.35);
+            --glow-success: 0 0 15px rgba(16, 185, 129, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--color-text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Header Navigation */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+            background-color: rgba(16, 21, 36, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-badge {
+            background: linear-gradient(135deg, var(--color-finance), var(--color-tech));
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #000;
+            font-size: 1.1rem;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+        }
+
+        .logo-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #ffffff, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background-color: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+            padding: 4px;
+            border-radius: 30px;
+        }
+
+        .nav-tab {
+            padding: 0.5rem 1.25rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--color-text-muted);
+            transition: all 0.2s ease;
+        }
+
+        .nav-tab.active {
+            background-color: var(--color-primary);
+            color: #ffffff;
+            box-shadow: var(--glow-primary);
+        }
+
+        .workspace-badge {
+            font-size: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            color: var(--color-text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Container Main */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .tab-content {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Presentation Mode Styling */
+        .presentation-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 1100px;
+            margin: 1rem auto;
+            width: 100%;
+        }
+
+        .slide-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 100%;
+            min-height: 550px;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--color-primary), var(--color-triage));
+        }
+
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .slide-tag {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--color-finance);
+            background-color: rgba(245, 158, 11, 0.1);
+            padding: 0.3rem 0.75rem;
+            border-radius: 4px;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .slide-number {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            color: var(--color-text-muted);
+            font-weight: 500;
+        }
+
+        .slide-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.25;
+            background: linear-gradient(to right, #ffffff, #d1d5db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .slide-body {
+            flex: 1;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--color-text-main);
+        }
+
+        .slide-body p {
+            margin-bottom: 1rem;
+        }
+
+        .slide-body ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .slide-body li {
+            position: relative;
+            padding-left: 1.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .slide-body li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--color-tech);
+            font-weight: bold;
+        }
+
+        /* Interactive slide components */
+        .slide-visual-arch {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            position: relative;
+        }
+
+        .arch-node {
+            background-color: var(--bg-surface-elevated);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            width: 28%;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .arch-node.triage { border-color: rgba(139, 92, 246, 0.4); }
+        .arch-node.tech { border-color: rgba(6, 182, 212, 0.4); }
+        .arch-node.finance { border-color: rgba(245, 158, 11, 0.4); }
+
+        .arch-node:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .arch-node.triage:hover { box-shadow: var(--glow-triage); }
+        .arch-node.tech:hover { box-shadow: var(--glow-tech); }
+        .arch-node.finance:hover { box-shadow: var(--glow-finance); }
+
+        .arch-node h4 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        .arch-node.triage h4 { color: var(--color-triage); }
+        .arch-node.tech h4 { color: var(--color-tech); }
+        .arch-node.finance h4 { color: var(--color-finance); }
+
+        .arch-node p {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            line-height: 1.4;
+            margin-bottom: 0;
+        }
+
+        .arch-arrow {
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(to right, rgba(255,255,255,0.05), rgba(255,255,255,0.3), rgba(255,255,255,0.05));
+            position: relative;
+            z-index: 1;
+        }
+
+        .arch-arrow::after {
+            content: '▶';
+            font-size: 0.6rem;
+            position: absolute;
+            right: 0;
+            top: -5px;
+            color: var(--color-text-muted);
+        }
+
+        .slide-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            width: 100%;
+        }
+
+        .slide-btn {
+            background-color: var(--bg-surface-elevated);
+            border: 1px solid var(--border-color);
+            color: var(--color-text-main);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .slide-btn:hover:not(:disabled) {
+            border-color: var(--border-hover);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .slide-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .slide-indicators {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .indicator-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .indicator-dot.active {
+            background-color: var(--color-primary);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        /* Interactive Simulator Layout */
+        .simulator-layout {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 1.5rem;
+            height: calc(100vh - 120px);
+            min-height: 700px;
+        }
+
+        /* Left Panel - Inputs */
+        .sim-input-panel {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            gap: 1.25rem;
+        }
+
+        .panel-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .panel-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 14px;
+            background-color: var(--color-primary);
+            border-radius: 2px;
+        }
+
+        .section-box {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+            color: var(--color-text-muted);
+        }
+
+        /* Preset Scenario Cards */
+        .presets-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+
+        .preset-btn {
+            background-color: var(--bg-surface-elevated);
+            border: 1px solid var(--border-color);
+            color: var(--color-text-main);
+            padding: 0.65rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--color-primary);
+            background-color: rgba(59, 130, 246, 0.04);
+        }
+
+        .preset-btn.active {
+            border-color: var(--color-primary);
+            background-color: rgba(59, 130, 246, 0.1);
+            box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.05);
+        }
+
+        .preset-btn .badge-pill {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.1rem 0.35rem;
+            border-radius: 4px;
+            width: fit-content;
+        }
+
+        .badge-happy { background-color: rgba(16, 185, 129, 0.15); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-update { background-color: rgba(139, 92, 246, 0.15); color: var(--color-triage); border: 1px solid rgba(139, 92, 246, 0.3); }
+        .badge-guard { background-color: rgba(239, 68, 68, 0.15); color: var(--color-danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .preset-title {
+            font-weight: 600;
+        }
+
+        /* Form Controls */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--color-text-main);
+        }
+
+        .form-input {
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            color: #ffffff;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .form-input-pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        textarea.form-input {
+            resize: none;
+            height: 100px;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .run-pipeline-btn {
+            background: linear-gradient(135deg, var(--color-primary), #2563eb);
+            border: none;
+            color: #ffffff;
+            padding: 0.85rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            box-shadow: var(--glow-primary);
+            margin-top: 0.5rem;
+        }
+
+        .run-pipeline-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .run-pipeline-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Right Panel - Simulator Visual Workspace */
+        .sim-workspace {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 1.25rem;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Pipeline Steps Visualizer */
+        .pipeline-status-bar {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .pipeline-step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0.35;
+            transition: all 0.3s ease;
+        }
+
+        .pipeline-step.active {
+            opacity: 1;
+        }
+
+        .pipeline-step.completed {
+            opacity: 0.8;
+        }
+
+        .step-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1.5px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .pipeline-step.active .step-circle {
+            transform: scale(1.15);
+        }
+
+        .pipeline-step.triage.active .step-circle { background-color: var(--color-triage); box-shadow: var(--glow-triage); }
+        .pipeline-step.tech.active .step-circle { background-color: var(--color-tech); box-shadow: var(--glow-tech); }
+        .pipeline-step.finance.active .step-circle { background-color: var(--color-finance); box-shadow: var(--glow-finance); }
+        
+        .pipeline-step.triage.completed .step-circle { background-color: rgba(139, 92, 246, 0.2); border-color: var(--color-triage); color: var(--color-triage); }
+        .pipeline-step.tech.completed .step-circle { background-color: rgba(6, 182, 212, 0.2); border-color: var(--color-tech); color: var(--color-tech); }
+        .pipeline-step.finance.completed .step-circle { background-color: rgba(245, 158, 11, 0.2); border-color: var(--color-finance); color: var(--color-finance); }
+
+        .step-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+        }
+
+        .pipeline-step.triage .step-label { color: var(--color-triage); }
+        .pipeline-step.tech .step-label { color: var(--color-tech); }
+        .pipeline-step.finance .step-label { color: var(--color-finance); }
+
+        .pipeline-connector {
+            flex: 1;
+            height: 2px;
+            background-color: var(--border-color);
+            margin: 0 1rem;
+            position: relative;
+        }
+
+        .pipeline-connector-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(to right, var(--color-triage), var(--color-tech), var(--color-finance));
+            transition: width 0.5s ease;
+        }
+
+        /* Results Pane */
+        .sim-results-pane {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 1rem;
+            overflow-y: auto;
+            padding-right: 0.25rem;
+        }
+
+        .sim-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .sim-card.double-col {
+            grid-column: span 2;
+        }
+
+        .sim-card.double-row {
+            grid-row: span 2;
+        }
+
+        .card-header-sim {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-header-sim h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-header-sim h3 span.dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* Visual Panels Grid Layout */
+        .roof-layout-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px dashed var(--border-color);
+            min-height: 180px;
+        }
+
+        .roof-outline {
+            border: 2px solid var(--color-tech);
+            border-radius: 6px;
+            background-color: rgba(6, 182, 212, 0.05);
+            padding: 1rem;
+            position: relative;
+            transition: all 0.3s ease;
+            display: grid;
+            gap: 4px;
+            max-width: 280px;
+            width: 100%;
+            height: 130px;
+            overflow: hidden;
+        }
+
+        .roof-outline.exceeded {
+            border-color: var(--color-danger);
+            background-color: rgba(239, 68, 68, 0.05);
+        }
+
+        .roof-panel-box {
+            background-color: var(--color-tech);
+            border-radius: 2px;
+            opacity: 0.85;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 2px rgba(6, 182, 212, 0.5);
+        }
+
+        .roof-outline.exceeded .roof-panel-box {
+            background-color: var(--color-danger);
+            box-shadow: 0 0 2px rgba(239, 68, 68, 0.5);
+        }
+
+        .layout-legend {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .legend-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        /* Tables Sourcing & BOM */
+        .bom-table-wrapper {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        table.bom-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            text-align: left;
+        }
+
+        table.bom-table th {
+            font-weight: 700;
+            color: var(--color-text-muted);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.5rem;
+        }
+
+        table.bom-table td {
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            padding: 0.5rem;
+            color: var(--color-text-main);
+        }
+
+        table.bom-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+
+        .status-badge.available {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--color-success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-badge.shortage {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--color-danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        /* Financial chart canvas container */
+        .chart-container-sim {
+            flex: 1;
+            position: relative;
+            background-color: rgba(0,0,0,0.15);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-container-sim canvas {
+            width: 100%;
+            height: 100%;
+            max-height: 200px;
+        }
+
+        /* Output text and markdown representation */
+        .proposal-textbox {
+            flex: 1;
+            background-color: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: #d1d5db;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        .copy-btn {
+            background-color: var(--bg-surface-elevated);
+            border: 1px solid var(--border-color);
+            color: var(--color-text-main);
+            padding: 0.35rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        /* Memory bank JSON inspector */
+        .json-inspector {
+            flex: 1;
+            background-color: #05070a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--color-success);
+            overflow-y: auto;
+        }
+
+        /* Overlay Alert Box for Guardrails */
+        .guardrail-alert-box {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1.5px solid var(--color-danger);
+            border-radius: 8px;
+            padding: 1rem;
+            display: none;
+            flex-direction: column;
+            gap: 0.5rem;
+            grid-column: span 2;
+            box-shadow: var(--glow-danger);
+            animation: pulse-danger 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-danger {
+            0% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.15); }
+            50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.35); }
+            100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.15); }
+        }
+
+        .guardrail-alert-box.active {
+            display: flex;
+        }
+
+        .guardrail-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--color-danger);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .guardrail-desc {
+            font-size: 0.8rem;
+            color: var(--color-text-main);
+            line-height: 1.4;
+        }
+
+        /* Tooltip style metadata */
+        .metric-badge-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .metric-pill {
+            background-color: var(--bg-surface-elevated);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 0.25rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--color-text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .metric-pill .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        /* Scrollbar customizing */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.08);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.16);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-section">
+            <div class="logo-badge">☼</div>
+            <div>
+                <h1 class="logo-title">Solar Multi-Agent System</h1>
+            </div>
+        </div>
+        
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('presentation')">Presentation Deck</button>
+            <button class="nav-tab" onclick="switchTab('simulator')">Live Interactive Demo</button>
+        </div>
+        
+        <div class="workspace-badge">
+            Workspace: C:\...\ADK_workspace
+        </div>
+    </header>
+
+    <main>
+        <!-- Tab 1: Presentation Slides -->
+        <div id="presentation-tab" class="tab-content active">
+            <div class="presentation-container">
+                <div class="slide-card" id="slide-card">
+                    <!-- Slide Content will be dynamically inserted here -->
+                </div>
+                
+                <div class="slide-controls">
+                    <button class="slide-btn" id="prev-slide-btn" onclick="navigateSlide(-1)">◀ Previous</button>
+                    <div class="slide-indicators" id="slide-indicators">
+                        <!-- Dots will be dynamically inserted here -->
+                    </div>
+                    <button class="slide-btn" id="next-slide-btn" onclick="navigateSlide(1)">Next Slide ▶</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Live Simulator -->
+        <div id="simulator-tab" class="tab-content">
+            <div class="simulator-layout">
+                
+                <!-- Left Panel: Inputs & Presets -->
+                <div class="sim-input-panel">
+                    <div class="panel-title">System Ingestion Engine</div>
+                    
+                    <div class="section-box">
+                        <span class="section-label">Select Demo Scenario</span>
+                        <div class="presets-grid">
+                            <button class="preset-btn active" id="preset-1" onclick="loadScenario(1)">
+                                <span class="preset-title">1. Happy Path Ingestion</span>
+                                <span class="badge-pill badge-happy">Austin (6.0 kW)</span>
+                            </button>
+                            <button class="preset-btn" id="preset-2" onclick="loadScenario(2)">
+                                <span class="preset-title">2. Multi-Turn Sizing Update</span>
+                                <span class="badge-pill badge-update">Modify to 8.0 kW</span>
+                            </button>
+                            <button class="preset-btn" id="preset-3" onclick="loadScenario(3)">
+                                <span class="preset-title">3. Physical Space Boundary</span>
+                                <span class="badge-pill badge-guard">Negative space constraint</span>
+                            </button>
+                            <button class="preset-btn" id="preset-4" onclick="loadScenario(4)">
+                                <span class="preset-title">4. Sizing Footprint Shortfall</span>
+                                <span class="badge-pill badge-guard">Capacity > Roof Area</span>
+                            </button>
+                            <button class="preset-btn" id="preset-5" onclick="loadScenario(5)">
+                                <span class="preset-title">5. Sourcing Stock limit</span>
+                                <span class="badge-pill badge-guard">> 60 kW Warehouse cap</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="section-box">
+                        <span class="section-label">Raw Discovery Email Input</span>
+                        <textarea class="form-input" id="raw-query-input" placeholder="Type customer lead email here..."></textarea>
+                    </div>
+
+                    <div class="section-box" style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                        <span class="section-label">Triage Override Parameters</span>
+                        
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" class="form-input" id="param-location" placeholder="e.g. Austin, TX">
+                        </div>
+                        
+                        <div class="form-input-pair">
+                            <div class="form-group">
+                                <label>Target Capacity (kW)</label>
+                                <input type="number" step="0.1" class="form-input" id="param-capacity" placeholder="e.g. 6.0">
+                            </div>
+                            <div class="form-group">
+                                <label>Budget ($)</label>
+                                <input type="number" class="form-input" id="param-budget" placeholder="e.g. 20000">
+                            </div>
+                        </div>
+
+                        <div class="form-input-pair">
+                            <div class="form-group">
+                                <label>Utility Rate ($/kWh)</label>
+                                <input type="number" step="0.01" class="form-input" id="param-rate" placeholder="e.g. 0.18">
+                            </div>
+                            <div class="form-group">
+                                <label>Annual Usage (kWh)</label>
+                                <input type="number" class="form-input" id="param-usage" placeholder="e.g. 12000">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Roof Footprint Space (sq ft)</label>
+                            <input type="number" class="form-input" id="param-roof" placeholder="e.g. 600">
+                        </div>
+                    </div>
+                    
+                    <button class="run-pipeline-btn" onclick="runSimulationPipeline()">Run Multi-Agent Pipeline</button>
+                </div>
+                
+                <!-- Right Panel: Results Workspace -->
+                <div class="sim-workspace">
+                    
+                    <!-- Steps status -->
+                    <div class="pipeline-status-bar">
+                        <div class="pipeline-step triage" id="step-triage">
+                            <div class="step-circle">1</div>
+                            <span class="step-label">Triage Agent</span>
+                        </div>
+                        <div class="pipeline-connector"><div class="pipeline-connector-fill" id="conn-triage"></div></div>
+                        
+                        <div class="pipeline-step tech" id="step-tech">
+                            <div class="step-circle">2</div>
+                            <span class="step-label">Technical Agent</span>
+                        </div>
+                        <div class="pipeline-connector"><div class="pipeline-connector-fill" id="conn-tech"></div></div>
+                        
+                        <div class="pipeline-step finance" id="step-finance">
+                            <div class="step-circle">3</div>
+                            <span class="step-label">Financial Logistics</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Grid of visual results -->
+                    <div class="sim-results-pane">
+                        
+                        <!-- Guardrail Alert Container -->
+                        <div class="guardrail-alert-box" id="guardrail-box">
+                            <div class="guardrail-title">⚠️ SYSTEM GUARDRAIL ALERT (Orchestrator Halted)</div>
+                            <div class="guardrail-desc" id="guardrail-text">No active guardrails triggered.</div>
+                        </div>
+                        
+                        <!-- Panel 1: Sizing Check & Footprint visual -->
+                        <div class="sim-card">
+                            <div class="card-header-sim">
+                                <h3><span class="dot" style="background-color: var(--color-tech);"></span>Technical Layout Vetting</h3>
+                                <span class="workspace-badge" id="tech-valid-badge">Valid Layout</span>
+                            </div>
+                            
+                            <div class="metric-badge-row">
+                                <div class="metric-pill">
+                                    <span class="dot" style="background-color: var(--color-tech);"></span>
+                                    <span>Footprint: <strong id="val-footprint">0</strong> sq ft</span>
+                                </div>
+                                <div class="metric-pill">
+                                    <span class="dot" style="background-color: var(--color-tech);"></span>
+                                    <span>Panels: <strong id="val-panels">0</strong> units</span>
+                                </div>
+                            </div>
+                            
+                            <div class="roof-layout-container">
+                                <div class="roof-outline" id="roof-layout-grid">
+                                    <!-- Panels grid elements injected here -->
+                                </div>
+                                <div class="layout-legend">
+                                    <div class="legend-item"><div class="legend-color" style="background-color: var(--color-tech);"></div><span>Panel (17.5 sq ft)</span></div>
+                                    <div class="legend-item"><div class="legend-color" style="background-color: rgba(6,182,212,0.1); border:1px solid var(--color-tech);"></div><span>Roof Surface</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Panel 2: Sourcing BOM -->
+                        <div class="sim-card">
+                            <div class="card-header-sim">
+                                <h3><span class="dot" style="background-color: var(--color-finance);"></span>Warehouse Stock & BOM</h3>
+                                <span class="workspace-badge" style="color: var(--color-finance);" id="bom-quote-badge">$0.00 Retail</span>
+                            </div>
+                            
+                            <div class="bom-table-wrapper">
+                                <table class="bom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Component</th>
+                                            <th>Req</th>
+                                            <th>Cost</th>
+                                            <th>Stock Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bom-table-body">
+                                        <tr>
+                                            <td colspan="4" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">Run pipeline to compile BOM</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Panel 3: Compounding ROI Graph -->
+                        <div class="sim-card">
+                            <div class="card-header-sim">
+                                <h3><span class="dot" style="background-color: var(--color-success);"></span>25-Year Compound ROI Savings</h3>
+                                <span class="workspace-badge" style="color: var(--color-success);" id="roi-payback-badge">Payback: N/A</span>
+                            </div>
+                            
+                            <div class="metric-badge-row">
+                                <div class="metric-pill">
+                                    <span class="dot" style="background-color: var(--color-success);"></span>
+                                    <span>Total: <strong id="val-net-savings">$0</strong></span>
+                                </div>
+                                <div class="metric-pill">
+                                    <span class="dot" style="background-color: var(--color-success);"></span>
+                                    <span>ROI: <strong id="val-roi-pct">0%</strong></span>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container-sim">
+                                <canvas id="roi-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Panel 4: Memory bank context & Final Proposal -->
+                        <div class="sim-card">
+                            <div class="card-header-sim">
+                                <h3><span class="dot" style="background-color: var(--color-primary);"></span>Context Bank & Orchestrator Response</h3>
+                                <button class="copy-btn" onclick="copyProposal()">📋 Copy Proposal</button>
+                            </div>
+                            
+                            <div style="display: flex; gap: 0.75rem; flex: 1; overflow: hidden; height: 100%;">
+                                <div class="json-inspector" id="context-json-inspector">
+                                    { "InMemoryContextBank": "Idle state" }
+                                </div>
+                                <div class="proposal-textbox" id="proposal-output-box">
+                                    Awaiting raw query ingestion. Select a scenario and click "Run Pipeline".
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Preset Scenarios
+        const SCENARIOS = {
+            1: {
+                query: "Dear Solar Distributor, I am looking to install a solar setup at my house in Austin, Texas. My roof is roughly 600 sq ft. I pay $0.18/kWh to the utility and use about 12,000 kWh annually. I want a 6.0 kW system capacity. My budget is $20,000.",
+                location: "Austin",
+                capacity: 6.0,
+                budget: 20000,
+                rate: 0.18,
+                usage: 12000,
+                roof: 600,
+                isUpdate: false
+            },
+            2: {
+                query: "Actually, my neighbor said I should get an 8.0 kW system instead. Can we update the capacity to 8.0 kW and recalculate the ROI and Bill of Materials?",
+                location: "Austin", // preserves historical context
+                capacity: 8.0,
+                budget: 20000,
+                rate: 0.18,
+                usage: 12000,
+                roof: 600,
+                isUpdate: true
+            },
+            3: {
+                query: "Hello, I need a standard 5.0 kW solar capacity system, but my roof area is -400 sq ft. Please send a quote.",
+                location: "Unknown",
+                capacity: 5.0,
+                budget: 15000,
+                rate: 0.23,
+                usage: 10000,
+                roof: -400,
+                isUpdate: false
+            },
+            4: {
+                query: "Hi, I want a large 15.0 kW solar capacity system. My roof space is only 300 sq ft. I pay $0.22/kWh and use 20,000 kWh annually. Can you build this?",
+                location: "Unknown",
+                capacity: 15.0,
+                budget: 45000,
+                rate: 0.22,
+                usage: 20000,
+                roof: 300,
+                isUpdate: false
+            },
+            5: {
+                query: "Good afternoon. We need a commercial 70.0 kW system for our warehouse in San Jose. We have plenty of space (10,000 sq ft) and a budget of $150,000. Send over the invoice.",
+                location: "San Jose",
+                capacity: 70.0,
+                budget: 150000,
+                rate: 0.23,
+                usage: 95000,
+                roof: 10000,
+                isUpdate: false
+            }
+        };
+
+        // Presentation slides content
+        const SLIDES = [
+            {
+                tag: "Overview",
+                title: "Solar Sizing & Sourcing Orchestrator",
+                body: `
+                    <p>Welcome to the <strong>Solar Multi-Agent System Presentation</strong>.</p>
+                    <p>This enterprise application coordinates AI agents to automate the sales discovery pipeline for solar distributors:</p>
+                    <ul>
+                        <li>Ingests messy, unstructured customer inquiries.</li>
+                        <li>Runs layout checks validating physical roof capacity.</li>
+                        <li>Sounces warehouse stocks and creates Bill of Materials (BOM).</li>
+                        <li>Computes a compounding 25-year return on investment (ROI) proposal.</li>
+                    </ul>
+                    <p style="margin-top: 1.5rem; font-size: 0.95rem; color: var(--color-finance);">
+                        <strong>💡 Presentation Tip:</strong> Use the Left and Right arrow keys on your keyboard to navigate slides, or use the navigation tabs above to toggle between this slide deck and the live simulator.
+                    </p>
+                `
+            },
+            {
+                tag: "The Pitch",
+                title: "The Four Key Distributor Friction Points",
+                body: `
+                    <ul>
+                        <li><strong>Unstructured Lead Discovery:</strong> Customer discovery inputs arrive in messy, incomplete emails or chats. Processing this is slow and error-prone.</li>
+                        <li><strong>Technical Layout Bottleneck:</strong> Sales reps quote system sizes that physically cannot fit on customer roofs, leading to engineer overhead and delays.</li>
+                        <li><strong>Supply Chain Disconnect:</strong> Offering hardware that is out-of-stock creates backorders, project delays, and unhappy customers.</li>
+                        <li><strong>Static ROI Sizing Model:</strong> standard quotes overlook grid electricity inflation (5% average) and solar panel degradation (0.5% average), understating long-term returns.</li>
+                    </ul>
+                `
+            },
+            {
+                tag: "Architecture",
+                title: "Multi-Agent Router & Memory Bank Pattern",
+                body: `
+                    <p>The system leverages an <strong>Orchestrator-Router Pattern</strong> with a shared memory context:</p>
+                    <div class="slide-visual-arch">
+                        <div class="arch-node triage">
+                            <h4>TriageAgent</h4>
+                            <p>Parses raw emails using Gemini 2.5 structured output schema. Extracts sizing, location, rates.</p>
+                        </div>
+                        <div class="arch-arrow"></div>
+                        <div class="arch-node tech">
+                            <h4>TechnicalAgent</h4>
+                            <p>Acts as layout engineer. Vets physical capacity constraints using required roof area models.</p>
+                        </div>
+                        <div class="arch-arrow"></div>
+                        <div class="arch-node finance">
+                            <h4>FinancialLogistics</h4>
+                            <p>Sourcing stock, builds BOM billing, computes 25-year compounding ROI offsets and drafts quote email.</p>
+                        </div>
+                    </div>
+                    <p style="margin-top: 1.5rem; text-align: center; color: var(--color-triage);">
+                        Shared State managed continuously via: <strong>InMemoryContextBank</strong>
+                    </p>
+                `
+            },
+            {
+                tag: "Deterministic Tools",
+                title: "Precision Sizing Math & Inventory Engine",
+                body: `
+                    <p>Specialist agents leverage three mathematical models to eliminate LLM hallucinations:</p>
+                    <ul>
+                        <li><strong>Required Footprint Math:</strong> Computes panel dimensions adding spacers. Assuming 400W premium panel takes 17.5 sq ft.
+                            <code style="display:block; background:#000; padding:0.5rem; border-radius:4px; margin:0.5rem 0; font-family:'JetBrains Mono'; font-size:0.9rem;">Required area = Math.ceil(Target kW / 0.4) * 17.5 sq ft</code>
+                        </li>
+                        <li><strong>25-Year Lifecycle ROI Engine:</strong> Compounds utility cost offsets against 5.0% grid inflation and 0.5% solar degradation.
+                            <code style="display:block; background:#000; padding:0.5rem; border-radius:4px; margin:0.5rem 0; font-family:'JetBrains Mono'; font-size:0.9rem;">Gen(y) = (kW * 1500) * (1-degradation)^(y-1); GridRate(y) = BaseRate * (1+escalation)^(y-1)</code>
+                        </li>
+                        <li><strong>Warehouse Allocation & Billing:</strong> Maps panels to micro-inverters, rails, BOS kits in stock. Retail pricing includes installation base, permits, and a 30% mark-up.</li>
+                    </ul>
+                `
+            },
+            {
+                tag: "Safety First",
+                title: "Pre-Flight & Post-Technical Guardrails",
+                body: `
+                    <p>Two-tier active validation keeps the system protected:</p>
+                    <ul>
+                        <li><strong>Pre-Flight Ingestion Filters:</strong> Flags negative inputs (budget, kW capacity, roof space) immediately, blocking garbage data. Also alerts on large commercial profiles (>15,000 sq ft) or capacities exceeding standard warehouse allocations (>60 kW).</li>
+                        <li><strong>Post-Technical Layout Guardrail:</strong> Halts pipeline with <code>ROOF_SPACE_EXCEEDED</code> exception if panels area exceeds available roof space.</li>
+                        <li><strong>Sourcing Stock Guardrail:</strong> Validates inventory databases, adding stock shortage warnings to proposal.</li>
+                    </ul>
+                    <p style="color: var(--color-danger); font-weight:600; margin-top: 1rem;">
+                        Triggering a guardrail halts agent execution and yields a structured, user-friendly system alert.
+                    </p>
+                `
+            }
+        ];
+
+        let currentSlide = 0;
+        let activeTab = 'presentation';
+        let memoryBankState = {
+            session_id: "session_001",
+            raw_query: "",
+            triage_data: {},
+            technical_data: {},
+            financial_logistics_data: {},
+            history: [],
+            validation_errors: [],
+            status: "INIT"
+        };
+        let warehouseInventory = {
+            panels: { name: "Premium 400W Monocrystalline Panel", stock: 150, unit_cost: 250.00 },
+            inverters: { name: "Smart Microinverter 400W", stock: 100, unit_cost: 150.00 },
+            racking: { name: "Universal Racking Mount Kit (per panel)", stock: 200, unit_cost: 50.00 },
+            bos: { name: "Balance of System (Wiring, Combiner, Breakers)", stock: 50, unit_cost: 400.00 }
+        };
+
+        // Navigation
+        function switchTab(tabName) {
+            activeTab = tabName;
+            document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tabName === 'presentation') {
+                document.querySelectorAll('.nav-tab')[0].classList.add('active');
+                document.getElementById('presentation-tab').classList.add('active');
+            } else {
+                document.querySelectorAll('.nav-tab')[1].classList.add('active');
+                document.getElementById('simulator-tab').classList.add('active');
+                
+                // If it is already completed, redraw elements instantly to prevent compute layout rect issues
+                if (memoryBankState.status === "COMPLETE") {
+                    const fin = memoryBankState.financial_logistics_data;
+                    const tech = memoryBankState.technical_data;
+                    const triage = memoryBankState.triage_data;
+                    setTimeout(() => {
+                        renderRoofLayout(tech.panels_needed, tech.required_footprint_sqft, triage.roof_space_sqft, tech.constraints_valid);
+                        renderBOMTable(fin.bom, fin.total_retail_quote_usd);
+                        renderROILineChart(fin.timeline, fin.total_retail_quote_usd);
+                    }, 50);
+                } else {
+                    setTimeout(() => runSimulationPipeline(), 100);
+                }
+            }
+        }
+
+        // Slides Logics
+        function renderSlide() {
+            const slide = SLIDES[currentSlide];
+            const container = document.getElementById('slide-card');
+            
+            container.innerHTML = `
+                <div>
+                    <div class="slide-header">
+                        <span class="slide-tag">${slide.tag}</span>
+                        <span class="slide-number">Slide ${currentSlide + 1} of ${SLIDES.length}</span>
+                    </div>
+                    <h2 class="slide-title">${slide.title}</h2>
+                    <div class="slide-body">${slide.body}</div>
+                </div>
+            `;
+
+            // Indicators
+            const indicatorsContainer = document.getElementById('slide-indicators');
+            indicatorsContainer.innerHTML = '';
+            SLIDES.forEach((_, idx) => {
+                const dot = document.createElement('div');
+                dot.className = `indicator-dot ${idx === currentSlide ? 'active' : ''}`;
+                dot.onclick = () => {
+                    currentSlide = idx;
+                    renderSlide();
+                };
+                indicatorsContainer.appendChild(dot);
+            });
+
+            document.getElementById('prev-slide-btn').disabled = currentSlide === 0;
+            document.getElementById('next-slide-btn').disabled = currentSlide === SLIDES.length - 1;
+        }
+
+        function navigateSlide(dir) {
+            currentSlide = Math.max(0, Math.min(SLIDES.length - 1, currentSlide + dir));
+            renderSlide();
+        }
+
+        // Keyboard controls
+        window.addEventListener('keydown', (e) => {
+            if (activeTab === 'presentation') {
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    navigateSlide(1);
+                } else if (e.key === 'ArrowLeft') {
+                    navigateSlide(-1);
+                }
+            }
+        });
+
+        // Initialize Simulator inputs
+        function loadScenario(num) {
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`preset-${num}`).classList.add('active');
+            
+            const scenario = SCENARIOS[num];
+            
+            if (scenario.isUpdate) {
+                // If it is a modification request, we simulate multi-turn:
+                // We keep the location, budget, rates, usage, etc from Scenario 1, but update the capacity & query!
+                document.getElementById('raw-query-input').value = scenario.query;
+                document.getElementById('param-capacity').value = scenario.capacity;
+                // do NOT clear other params, simulate history retention
+            } else {
+                // Clean session loading
+                document.getElementById('raw-query-input').value = scenario.query;
+                document.getElementById('param-location').value = scenario.location;
+                document.getElementById('param-capacity').value = scenario.capacity;
+                document.getElementById('param-budget').value = scenario.budget;
+                document.getElementById('param-rate').value = scenario.rate;
+                document.getElementById('param-usage').value = scenario.usage;
+                document.getElementById('param-roof').value = scenario.roof;
+                
+                // Clear state
+                memoryBankState = {
+                    session_id: "session_001",
+                    raw_query: scenario.query,
+                    triage_data: {},
+                    technical_data: {},
+                    financial_logistics_data: {},
+                    history: [],
+                    validation_errors: [],
+                    status: "INIT"
+                };
+            }
+            
+            runSimulationPipeline();
+        }
+
+        // Simulation logic equivalent to Python
+        function runSimulationPipeline() {
+            const query = document.getElementById('raw-query-input').value;
+            const location = document.getElementById('param-location').value || "Unknown";
+            const target_kw = parseFloat(document.getElementById('param-capacity').value) || 0;
+            const budget = parseFloat(document.getElementById('param-budget').value) || 0;
+            const rate = parseFloat(document.getElementById('param-rate').value) || 0;
+            const usage = parseFloat(document.getElementById('param-usage').value) || 0;
+            const roof = parseFloat(document.getElementById('param-roof').value) || 0;
+
+            const isUpdate = (memoryBankState.status !== "INIT" && (query.toLowerCase().includes("change") || query.toLowerCase().includes("update") || query.toLowerCase().includes("instead")));
+
+            // Reset step animations
+            const stepTriage = document.getElementById('step-triage');
+            const stepTech = document.getElementById('step-tech');
+            const stepFinance = document.getElementById('step-finance');
+            const connTriage = document.getElementById('conn-triage');
+            const connTech = document.getElementById('conn-tech');
+            
+            stepTriage.className = "pipeline-step triage active";
+            stepTech.className = "pipeline-step tech";
+            stepFinance.className = "pipeline-step finance";
+            connTriage.style.width = "0%";
+            connTech.style.width = "0%";
+            
+            document.getElementById('guardrail-box').classList.remove('active');
+            
+            // --- STEP 1: Ingestion & Triage ---
+            setTimeout(() => {
+                stepTriage.className = "pipeline-step triage completed";
+                connTriage.style.width = "100%";
+                stepTech.className = "pipeline-step tech active";
+                
+                if (isUpdate) {
+                    memoryBankState.triage_data.system_size_kw = target_kw;
+                    memoryBankState.triage_data.notes = `Modified via turn: ${query.substring(0,40)}...`;
+                } else {
+                    memoryBankState.triage_data = {
+                        system_size_kw: target_kw,
+                        budget_usd: budget,
+                        location: location,
+                        utility_rate_kwh: rate,
+                        annual_usage_kwh: usage,
+                        roof_space_sqft: roof,
+                        notes: `Ingested discovery lead.`
+                    };
+                }
+                memoryBankState.status = "TRIAGED";
+                memoryBankState.validation_errors = [];
+                
+                // PRE-FLIGHT GUARDRAILS
+                if (memoryBankState.triage_data.system_size_kw <= 0) {
+                    memoryBankState.validation_errors.push("ANOMALOUS_NEGATIVE_CAPACITY");
+                } else if (memoryBankState.triage_data.system_size_kw > 60.0) {
+                    memoryBankState.validation_errors.push("CAPACITY_EXCEEDS_WAREHOUSE_LIMIT");
+                }
+                
+                if (memoryBankState.triage_data.roof_space_sqft <= 0) {
+                    memoryBankState.validation_errors.push("ANOMALOUS_NEGATIVE_ROOF");
+                } else if (memoryBankState.triage_data.roof_space_sqft > 15000) {
+                    memoryBankState.validation_errors.push("ANOMALOUS_EXCESSIVE_ROOF");
+                }
+                
+                if (memoryBankState.triage_data.budget_usd <= 0) {
+                    memoryBankState.validation_errors.push("ANOMALOUS_NEGATIVE_BUDGET");
+                }
+
+                if (memoryBankState.validation_errors.length > 0) {
+                    handleHalt();
+                    return;
+                }
+                
+                // --- STEP 2: Technical sizing constraints check ---
+                setTimeout(() => {
+                    stepTech.className = "pipeline-step tech completed";
+                    connTech.style.width = "100%";
+                    stepFinance.className = "pipeline-step finance active";
+                    
+                    const panelsNeeded = Math.ceil(memoryBankState.triage_data.system_size_kw / 0.4);
+                    const requiredFootprint = panelsNeeded * 17.5;
+                    
+                    let layoutValid = true;
+                    let techNotes = "Physical footprint fits available roof space.";
+                    if (memoryBankState.triage_data.roof_space_sqft !== null && requiredFootprint > memoryBankState.triage_data.roof_space_sqft) {
+                        layoutValid = false;
+                        techNotes = `Sizing constraint violation: Required footprint (${requiredFootprint} sq ft) exceeds available roof space (${memoryBankState.triage_data.roof_space_sqft} sq ft).`;
+                        memoryBankState.validation_errors.push("ROOF_SPACE_EXCEEDED");
+                    }
+                    
+                    memoryBankState.technical_data = {
+                        required_footprint_sqft: requiredFootprint,
+                        panels_needed: panelsNeeded,
+                        panel_wattage_w: 400,
+                        constraints_valid: layoutValid,
+                        technical_notes: techNotes
+                    };
+                    
+                    // Render tech visual panels grid
+                    renderRoofLayout(panelsNeeded, requiredFootprint, memoryBankState.triage_data.roof_space_sqft, layoutValid);
+
+                    if (memoryBankState.validation_errors.length > 0) {
+                        handleHalt();
+                        return;
+                    }
+                    
+                    // --- STEP 3: Financial & Sourcing logistics ---
+                    setTimeout(() => {
+                        stepFinance.className = "pipeline-step finance completed";
+                        
+                        const panelsStock = warehouseInventory.panels.stock;
+                        const panelsCost = panelsNeeded * warehouseInventory.panels.unit_cost;
+                        const invertersCost = panelsNeeded * warehouseInventory.inverters.unit_cost;
+                        const rackingCost = panelsNeeded * warehouseInventory.racking.unit_cost;
+                        const bosCost = 1 * warehouseInventory.bos.unit_cost;
+                        const hardwareCost = panelsCost + invertersCost + rackingCost + bosCost;
+                        
+                        const laborCost = 1200 + (150 * panelsNeeded);
+                        const permitFees = 800;
+                        const subtotal = hardwareCost + laborCost + permitFees;
+                        const distributorMarkup = subtotal * 0.30;
+                        const totalRetailQuote = subtotal + distributorMarkup;
+                        
+                        let shortageDetected = false;
+                        const shortages = [];
+                        let panelsStatus = "Available";
+                        if (panelsNeeded > panelsStock) {
+                            panelsStatus = `Shortage (Needs ${panelsNeeded}, Only ${panelsStock} in stock)`;
+                            shortageDetected = true;
+                            shortages.push(`Solar Panels (Short by ${panelsNeeded - panelsStock})`);
+                            memoryBankState.validation_errors.push("WAREHOUSE_SHORTAGE");
+                        }
+                        
+                        const bom = [
+                            { item: "Panels", name: warehouseInventory.panels.name, required: panelsNeeded, status: panelsStatus, cost: panelsCost },
+                            { item: "Inverters", name: warehouseInventory.inverters.name, required: panelsNeeded, status: "Available", cost: invertersCost },
+                            { item: "Racking", name: warehouseInventory.racking.name, required: panelsNeeded, status: "Available", cost: rackingCost },
+                            { item: "BOS", name: warehouseInventory.bos.name, required: 1, status: "Available", cost: bosCost }
+                        ];
+                        
+                        // ROI Calculations
+                        const annualGenBase = memoryBankState.triage_data.system_size_kw * 1500;
+                        let cumulativeSavings = 0;
+                        let paybackYear = null;
+                        const timeline = [];
+                        
+                        for (let year = 1; year <= 25; year++) {
+                            const genThisYear = annualGenBase * Math.pow(1 - 0.005, year - 1);
+                            const rateThisYear = memoryBankState.triage_data.utility_rate_kwh * Math.pow(1 + 0.05, year - 1);
+                            
+                            const offsetKwh = Math.min(genThisYear, memoryBankState.triage_data.annual_usage_kwh);
+                            const exportKwh = Math.max(0, genThisYear - memoryBankState.triage_data.annual_usage_kwh);
+                            
+                            const savingsOffset = offsetKwh * rateThisYear;
+                            const savingsExport = exportKwh * (rateThisYear * 0.5);
+                            const annualSavings = savingsOffset + savingsExport;
+                            
+                            cumulativeSavings += annualSavings;
+                            const netPosition = cumulativeSavings - totalRetailQuote;
+                            
+                            if (netPosition >= 0 && paybackYear === null) {
+                                const prevCumulative = cumulativeSavings - annualSavings;
+                                const needed = totalRetailQuote - prevCumulative;
+                                const fraction = needed / annualSavings;
+                                paybackYear = ((year - 1) + fraction).toFixed(2);
+                            }
+                            
+                            timeline.push({
+                                year: year,
+                                netPosition: netPosition,
+                                annualSavings: annualSavings
+                            });
+                        }
+                        
+                        const netSavings = cumulativeSavings - totalRetailQuote;
+                        const roiPercentage = ((cumulativeSavings / totalRetailQuote) * 100).toFixed(2);
+                        
+                        memoryBankState.financial_logistics_data = {
+                            bom: bom,
+                            hardware_cost_usd: hardwareCost,
+                            labor_cost_usd: laborCost,
+                            permits_fees_usd: permitFees,
+                            total_retail_quote_usd: totalRetailQuote,
+                            payback_period_years: paybackYear !== null ? paybackYear : "Never (>25 yrs)",
+                            total_25yr_savings_usd: cumulativeSavings,
+                            net_25yr_savings_usd: netSavings,
+                            roi_percentage: roiPercentage,
+                            timeline: timeline
+                        };
+                        
+                        memoryBankState.status = "COMPLETE";
+                        
+                        // Render results UI
+                        document.getElementById('tech-valid-badge').textContent = "Valid Sizing";
+                        document.getElementById('tech-valid-badge').className = "workspace-badge";
+                        document.getElementById('tech-valid-badge').style.borderColor = "var(--color-success)";
+                        document.getElementById('tech-valid-badge').style.color = "var(--color-success)";
+                        
+                        document.getElementById('bom-quote-badge').textContent = `$${totalRetailQuote.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} Quote`;
+                        
+                        renderBOMTable(bom, totalRetailQuote);
+                        
+                        document.getElementById('roi-payback-badge').textContent = `Payback: ${paybackYear !== null ? paybackYear + ' Yrs' : 'Never'}`;
+                        document.getElementById('val-net-savings').textContent = `$${netSavings.toLocaleString('en-US', {maximumFractionDigits:0})}`;
+                        document.getElementById('val-roi-pct').textContent = `${roiPercentage}%`;
+                        
+                        renderROILineChart(timeline, totalRetailQuote);
+                        
+                        // Formulate proposal narrative
+                        const proposalText = generateProposalText(memoryBankState.triage_data, memoryBankState.technical_data, memoryBankState.financial_logistics_data);
+                        document.getElementById('proposal-output-box').textContent = proposalText;
+                        
+                        updateJSONInspector();
+                        
+                    }, 400);
+                }, 400);
+            }, 400);
+        }
+
+        // Halting and Guardrail Exceptions Rendering
+        function handleHalt() {
+            document.getElementById('tech-valid-badge').textContent = "Pipeline Halted";
+            document.getElementById('tech-valid-badge').className = "workspace-badge";
+            document.getElementById('tech-valid-badge').style.borderColor = "var(--color-danger)";
+            document.getElementById('tech-valid-badge').style.color = "var(--color-danger)";
+            
+            // Highlight step failure
+            const stepTriage = document.getElementById('step-triage');
+            const stepTech = document.getElementById('step-tech');
+            const stepFinance = document.getElementById('step-finance');
+            
+            if (memoryBankState.validation_errors.includes("ROOF_SPACE_EXCEEDED")) {
+                stepTech.className = "pipeline-step tech active";
+                stepFinance.className = "pipeline-step finance";
+                document.getElementById('conn-tech').style.width = "0%";
+            } else {
+                stepTriage.className = "pipeline-step triage active";
+                stepTech.className = "pipeline-step tech";
+                stepFinance.className = "pipeline-step finance";
+                document.getElementById('conn-triage').style.width = "0%";
+            }
+
+            memoryBankState.status = "ERROR";
+            
+            // Build error prompts
+            const alertTextNodes = [];
+            memoryBankState.validation_errors.forEach(err => {
+                if (err === "ANOMALOUS_NEGATIVE_CAPACITY") {
+                    alertTextNodes.push("* **Capacity Limit Exception:** A negative capacity capacity (kW) was entered.");
+                } else if (err === "CAPACITY_EXCEEDS_WAREHOUSE_LIMIT") {
+                    alertTextNodes.push("* **Warehouse Supply Limit Exceeded:** The target system size (>60 kW) requires more than our standard 150-panel warehouse allocation.");
+                } else if (err === "ANOMALOUS_NEGATIVE_ROOF") {
+                    alertTextNodes.push("* **Physical Space Exception:** The roof space size entered was negative or zero.");
+                } else if (err === "ANOMALOUS_EXCESSIVE_ROOF") {
+                    alertTextNodes.push("* **Verification Warning:** The roof space entered exceeds 15,000 sq ft, which is anomalous for residential profiling.");
+                } else if (err === "ANOMALOUS_NEGATIVE_BUDGET") {
+                    alertTextNodes.push("* **Budget Boundary Exception:** The budget entered was negative or zero.");
+                } else if (err === "ROOF_SPACE_EXCEEDED") {
+                    const req = memoryBankState.technical_data.required_footprint_sqft;
+                    const avail = memoryBankState.triage_data.roof_space_sqft;
+                    alertTextNodes.push(`* **Sizing Footprint Shortfall:** The estimated layout requires ${req} sq ft, but available roof space is only ${avail} sq ft.`);
+                }
+            });
+            
+            const joinedErrors = alertTextNodes.join('<br>');
+            const errorHtml = `
+                <div class="guardrail-title">⚠️ SYSTEM GUARDRAIL ALERT (Orchestrator Halted)</div>
+                <div class="guardrail-desc">
+                    <p style="margin-bottom: 0.5rem;">The Multi-Agent Orchestrator has halted execution due to the following validation exceptions:</p>
+                    <p style="font-family: monospace; font-size: 0.75rem; color:#fca5a5; line-height: 1.5;">${joinedErrors}</p>
+                    <p style="margin-top: 0.5rem; font-weight: 700; color: #ffffff;">Next Step Required: Please clarify or update your input parameters so we can recalculate your proposal.</p>
+                </div>
+            `;
+            
+            const alertBox = document.getElementById('guardrail-box');
+            alertBox.innerHTML = errorHtml;
+            alertBox.classList.add('active');
+            
+            document.getElementById('proposal-output-box').textContent = `### ⚠️ SYSTEM GUARDRAIL ALERT\n\nThe Multi-Agent Orchestrator has halted execution due to the following validation exceptions:\n\n${alertTextNodes.join('\n')}\n\n**Next Step Required:**\nPlease clarify or update your input specifications so we can recalculate your proposal correctly.`;
+            
+            // Clean BOM
+            document.getElementById('bom-table-body').innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--color-danger); font-weight: 600; padding: 2rem;">Pipeline Halted: Sourcing Aborted</td></tr>`;
+            document.getElementById('bom-quote-badge').textContent = "$0.00 (Halted)";
+            
+            // Clear stats
+            document.getElementById('roi-payback-badge').textContent = `Payback: N/A`;
+            document.getElementById('val-net-savings').textContent = `$0`;
+            document.getElementById('val-roi-pct').textContent = `0%`;
+            clearCanvas();
+            
+            updateJSONInspector();
+        }
+
+        // Render graphical panel layouts
+        function renderRoofLayout(panels, reqFt, availFt, isValid) {
+            const grid = document.getElementById('roof-layout-grid');
+            grid.innerHTML = '';
+            
+            document.getElementById('val-footprint').textContent = reqFt;
+            document.getElementById('val-panels').textContent = panels;
+            
+            if (availFt <= 0) {
+                grid.className = "roof-outline exceeded";
+                return;
+            }
+            
+            if (!isValid) {
+                grid.className = "roof-outline exceeded";
+            } else {
+                grid.className = "roof-outline";
+            }
+            
+            // Determine panel visual matrix
+            let cols = 5;
+            let rows = Math.ceil(panels / cols);
+            if (rows > 4) {
+                cols = Math.ceil(panels / 4);
+                rows = 4;
+            }
+            
+            grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+            
+            // Draw visually panels up to roof size ratio
+            const gridCellsCount = cols * rows;
+            for (let i = 0; i < gridCellsCount; i++) {
+                const cell = document.createElement('div');
+                cell.className = "roof-panel-box";
+                grid.appendChild(cell);
+            }
+        }
+
+        // BOM Sourced rendering
+        function renderBOMTable(bom, totalRetailQuote) {
+            const tbody = document.getElementById('bom-table-body');
+            tbody.innerHTML = '';
+            
+            bom.forEach(item => {
+                const tr = document.createElement('tr');
+                
+                const isShortage = item.status.includes("Shortage");
+                const statusBadge = `<span class="status-badge ${isShortage ? 'shortage' : 'available'}">${isShortage ? 'Shortage' : 'In Stock'}</span>`;
+                
+                tr.innerHTML = `
+                    <td><strong>${item.item}</strong><br><span style="font-size:0.7rem; color:var(--color-text-muted);">${item.name}</span></td>
+                    <td>${item.required}</td>
+                    <td>$${item.cost.toLocaleString('en-US', {maximumFractionDigits:0})}</td>
+                    <td>${statusBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // Append Markup row
+            const trMarkup = document.createElement('tr');
+            trMarkup.style.backgroundColor = "rgba(255,255,255,0.02)";
+            trMarkup.style.borderTop = "1px solid var(--border-color)";
+            trMarkup.innerHTML = `
+                <td colspan="2"><strong>Labor, Permits & Engineering Markup</strong></td>
+                <td><strong>$${(totalRetailQuote - (bom.reduce((acc, i) => acc + i.cost, 0))).toLocaleString('en-US', {maximumFractionDigits:0})}</strong></td>
+                <td><span class="status-badge available">Fulfilled</span></td>
+            `;
+            tbody.appendChild(trMarkup);
+        }
+
+        // Compounding Line Chart in HTML Canvas
+        function renderROILineChart(timeline, initialInvestment) {
+            const canvas = document.getElementById('roi-chart');
+            const ctx = canvas.getContext('2d');
+            
+            // Handle resizing
+            const rect = canvas.parentNode.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = Math.max(160, rect.height - 10);
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 25;
+            
+            // Min/Max of data points
+            const yMin = -initialInvestment;
+            const yMax = timeline[timeline.length - 1].netPosition;
+            
+            // Map function coordinates
+            function getX(year) {
+                return padding + ((year - 1) / 24) * (width - 2 * padding);
+            }
+            
+            function getY(val) {
+                return height - padding - ((val - yMin) / (yMax - yMin)) * (height - 2 * padding);
+            }
+            
+            // Draw Zero baseline axis
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(padding, getY(0));
+            ctx.lineTo(width - padding, getY(0));
+            ctx.stroke();
+            
+            // Plot Compounding position curve
+            ctx.strokeStyle = '#10b981'; // green line
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(getX(1), getY(timeline[0].netPosition));
+            
+            for (let i = 1; i < timeline.length; i++) {
+                ctx.lineTo(getX(timeline[i].year), getY(timeline[i].netPosition));
+            }
+            ctx.stroke();
+            
+            // Draw Area under curve gradient
+            const areaGrad = ctx.createLinearGradient(0, getY(yMax), 0, getY(yMin));
+            areaGrad.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
+            areaGrad.addColorStop(1, 'rgba(239, 68, 68, 0.05)');
+            
+            ctx.fillStyle = areaGrad;
+            ctx.beginPath();
+            ctx.moveTo(getX(1), getY(timeline[0].netPosition));
+            for (let i = 1; i < timeline.length; i++) {
+                ctx.lineTo(getX(timeline[i].year), getY(timeline[i].netPosition));
+            }
+            ctx.lineTo(getX(25), getY(yMin));
+            ctx.lineTo(getX(1), getY(yMin));
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw Payback break-even circle
+            const paybackVal = parseFloat(memoryBankState.financial_logistics_data.payback_period_years);
+            if (!isNaN(paybackVal)) {
+                ctx.fillStyle = '#f59e0b'; // amber spot
+                ctx.beginPath();
+                ctx.arc(getX(paybackVal), getY(0), 5, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Label payback
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '9px sans-serif';
+                ctx.fillText(`Year ${paybackVal}`, getX(paybackVal) - 15, getY(0) - 10);
+            }
+            
+            // Axes Labels
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.font = '8px sans-serif';
+            ctx.fillText('Yr 1', padding - 5, height - 8);
+            ctx.fillText('Yr 12', width / 2 - 10, height - 8);
+            ctx.fillText('Yr 25', width - padding - 15, height - 8);
+        }
+
+        function clearCanvas() {
+            const canvas = document.getElementById('roi-chart');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Draft proposal Markdown template
+        function generateProposalText(triage, tech, fin) {
+            let shortageText = "";
+            let bomRows = "";
+            
+            fin.bom.forEach(item => {
+                bomRows += `| ${item.item} | ${item.name} | ${item.required} | ${item.status.includes('Shortage') ? 'Shortage' : 'Available'} | $${item.cost.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} |\n`;
+            });
+            
+            const proposal = `Dear Customer,
+
+We are pleased to submit our formal solar system proposal based on your criteria.
+
+### Project Sizing Summary
+*   **System Capacity:** ${triage.system_size_kw.toFixed(1)} kW DC
+*   **Total Estimated Hardware & Sourcing Cost:** $${fin.hardware_cost_usd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} USD
+*   **Total Retail System Investment:** $${fin.total_retail_quote_usd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} USD (Includes installation, permitting, and engineering markup)
+
+### Sourced Bill of Materials (BOM)
+| Category | Component Description | Qty Required | Stock Status | Sourcing Total |
+| :--- | :--- | :--- | :--- | :--- |
+${bomRows}
+
+### Compounding Financial Sizing Model (25-Year Lifecycle)
+*   **Current Electricity Rate:** $${triage.utility_rate_kwh.toFixed(2)}/kWh (Compounding grid cost escalation: 5.0% annually)
+*   **Payback (Break-Even) Period:** ${fin.payback_period_years} Years
+*   **Total 25-Year Utility Offset Savings:** $${fin.total_25yr_savings_usd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} USD
+*   **Net Lifetime Return on Investment:** $${fin.net_25yr_savings_usd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} USD (${fin.roi_percentage}% ROI)
+
+This solution offsets your utility bills, locking in a compounding savings curve while utilizing premium components. Let us know if you want to proceed with engineering approval!
+
+Best Regards,
+Antigravity Solar Distribution Team`;
+
+            return proposal;
+        }
+
+        // Copy proposal text
+        function copyProposal() {
+            const copyText = document.getElementById('proposal-output-box').textContent;
+            navigator.clipboard.writeText(copyText).then(() => {
+                alert('Proposal copy successful!');
+            }, (err) => {
+                console.error('Could not copy text: ', err);
+            });
+        }
+
+        // Memory Bank inspector updating
+        function updateJSONInspector() {
+            const inspector = document.getElementById('context-json-inspector');
+            
+            // Format state for readibility
+            const simplifiedState = {
+                session_id: memoryBankState.session_id,
+                status: memoryBankState.status,
+                triage_data: memoryBankState.triage_data,
+                technical_data: {
+                    required_footprint_sqft: memoryBankState.technical_data.required_footprint_sqft,
+                    panels_needed: memoryBankState.technical_data.panels_needed,
+                    constraints_valid: memoryBankState.technical_data.constraints_valid,
+                    technical_notes: memoryBankState.technical_data.technical_notes
+                },
+                financial_summary: memoryBankState.financial_logistics_data.total_retail_quote_usd ? {
+                    retail_quote_usd: memoryBankState.financial_logistics_data.total_retail_quote_usd,
+                    payback_years: memoryBankState.financial_logistics_data.payback_period_years,
+                    roi_percentage: memoryBankState.financial_logistics_data.roi_percentage
+                } : "N/A",
+                validation_errors: memoryBankState.validation_errors
+            };
+            
+            inspector.textContent = JSON.stringify(simplifiedState, null, 2);
+        }
+
+        // Init
+        renderSlide();
+        loadScenario(1);
+
+    </script>
+</body>
+</html>
