@@ -1,0 +1,2188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaggle Submission: Stateful Multi-Agent Solar Ingestion and Sourcing System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-base: #080b11;
+            --bg-surface: #101524;
+            --bg-surface-elevated: #161e33;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.16);
+            
+            --color-primary: #3b82f6;      /* Blue */
+            --color-triage: #8b5cf6;       /* Violet / Purple */
+            --color-tech: #06b6d4;         /* Cyan */
+            --color-finance: #f59e0b;      /* Amber */
+            --color-danger: #ef4444;       /* Rose */
+            --color-success: #10b981;      /* Emerald */
+            --color-text-main: #f3f4f6;
+            --color-text-muted: #9ca3af;
+            
+            --glow-primary: 0 0 15px rgba(59, 130, 246, 0.35);
+            --glow-triage: 0 0 15px rgba(139, 92, 246, 0.35);
+            --glow-tech: 0 0 15px rgba(6, 182, 212, 0.35);
+            --glow-finance: 0 0 15px rgba(245, 158, 11, 0.35);
+            --glow-danger: 0 0 15px rgba(239, 68, 68, 0.35);
+            --glow-success: 0 0 15px rgba(16, 185, 129, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--color-text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Header Navigation */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+            background-color: rgba(16, 21, 36, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-badge {
+            background: linear-gradient(135deg, var(--color-finance), var(--color-tech));
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #000;
+            font-size: 1.1rem;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+        }
+
+        .logo-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #ffffff, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background-color: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+            padding: 4px;
+            border-radius: 30px;
+        }
+
+        .nav-tab {
+            padding: 0.5rem 1.25rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--color-text-muted);
+            transition: all 0.2s ease;
+        }
+
+        .nav-tab.active {
+            background-color: var(--color-primary);
+            color: #ffffff;
+            box-shadow: var(--glow-primary);
+        }
+
+        .workspace-badge {
+            font-size: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            color: var(--color-text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Container Main */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .tab-content {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Writeup Style */
+        .writeup-container {
+            max-width: 900px;
+            margin: 1.5rem auto;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 3rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            line-height: 1.7;
+        }
+
+        .writeup-container h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #ffffff, #d1d5db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .writeup-container h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: var(--color-primary);
+        }
+
+        .writeup-container h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-top: 1.25rem;
+            margin-bottom: 0.75rem;
+            color: #ffffff;
+        }
+
+        .writeup-container p {
+            margin-bottom: 1.25rem;
+            color: #d1d5db;
+        }
+
+        .writeup-container ul {
+            margin-bottom: 1.25rem;
+            padding-left: 1.5rem;
+        }
+
+        .writeup-container li {
+            margin-bottom: 0.5rem;
+            color: #d1d5db;
+        }
+
+        .formula-box {
+            background-color: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+            padding: 1.25rem;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            color: var(--color-tech);
+            text-align: center;
+        }
+
+        .mer-diag {
+            background-color: rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Presentation Mode Styling */
+        .presentation-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 1100px;
+            margin: 1rem auto;
+            width: 100%;
+        }
+
+        .slide-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 100%;
+            min-height: 550px;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--color-primary), var(--color-triage));
+        }
+
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .slide-tag {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--color-finance);
+            background-color: rgba(245, 158, 11, 0.1);
+            padding: 0.3rem 0.75rem;
+            border-radius: 4px;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .slide-number {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            color: var(--color-text-muted);
+            font-weight: 500;
+        }
+
+        .slide-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.25;
+            background: linear-gradient(to right, #ffffff, #d1d5db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .slide-body {
+            flex: 1;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--color-text-main);
+        }
+
+        .slide-body p {
+            margin-bottom: 1rem;
+        }
+
+        .slide-body ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .slide-body li {
+            position: relative;
+            padding-left: 1.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .slide-body li::before {
+            content: '->';
+            position: absolute;
+            left: 0;
+            color: var(--color-tech);
+            font-weight: bold;
+        }
+
+        .slide-visual-arch {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            position: relative;
+        }
+
+        .arch-node {
+            background-color: var(--bg-surface-elevated);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            width: 28%;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .arch-node.triage { border-color: rgba(139, 92, 246, 0.4); }
+        .arch-node.tech { border-color: rgba(6, 182, 212, 0.4); }
+        .arch-node.finance { border-color: rgba(245, 158, 11, 0.4); }
+
+        .arch-node:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .arch-node.triage:hover { box-shadow: var(--glow-triage); }
+        .arch-node.tech:hover { box-shadow: var(--glow-tech); }
+        .arch-node.finance:hover { box-shadow: var(--glow-finance); }
+
+        .arch-node h4 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        .arch-node.triage h4 { color: var(--color-triage); }
+        .arch-node.tech h4 { color: var(--color-tech); }
+        .arch-node.finance h4 { color: var(--color-finance); }
+
+        .arch-node p {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            line-height: 1.4;
+            margin-bottom: 0;
+        }
+
+        .arch-arrow {
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(to right, rgba(255,255,255,0.05), rgba(255,255,255,0.3), rgba(255,255,255,0.05));
+            position: relative;
+            z-index: 1;
+        }
+
+        .arch-arrow::after {
+            content: '>';
+            font-size: 0.6rem;
+            position: absolute;
+            right: 0;
+            top: -5px;
+            color: var(--color-text-muted);
+        }
+
+        .slide-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            width: 100%;
+        }
+
+        .slide-btn {
+            background-color: var(--bg-surface-elevated);
+            border: 1px solid var(--border-color);
+            color: var(--color-text-main);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .slide-btn:hover:not(:disabled) {
+            border-color: var(--border-hover);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .slide-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .slide-indicators {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .indicator-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .indicator-dot.active {
+            background-color: var(--color-primary);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        /* Simulator Layout */
+        .simulator-layout {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 1.5rem;
+            height: calc(100vh - 120px);
+            min-height: 700px;
+        }
+
+        .sim-input-panel {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            gap: 1.25rem;
+        }
+
+        .panel-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .panel-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 14px;
+            background-color: var(--color-primary);
+            border-radius: 2px;
+        }
+
+        .section-box {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+            color: var(--color-text-muted);
+        }
+
+        .presets-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+
+        .preset-btn {
+            background-color: var(--bg-surface-elevated);
+            border: 1px solid var(--border-color);
+            color: var(--color-text-main);
+            padding: 0.65rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--color-primary);
+            background-color: rgba(59, 130, 246, 0.04);
+        }
+
+        .preset-btn.active {
+            border-color: var(--color-primary);
+            background-color: rgba(59, 130, 246, 0.1);
+            box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.05);
+        }
+
+        .preset-btn .badge-pill {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.1rem 0.35rem;
+            border-radius: 4px;
+            width: fit-content;
+        }
+
+        .badge-happy { background-color: rgba(16, 185, 129, 0.15); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-update { background-color: rgba(139, 92, 246, 0.15); color: var(--color-triage); border: 1px solid rgba(139, 92, 246, 0.3); }
+        .badge-guard { background-color: rgba(239, 68, 68, 0.15); color: var(--color-danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .preset-title { font-weight: 600; }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--color-text-main);
+        }
+
+        .form-input {
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            color: #ffffff;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .form-input-pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        textarea.form-input {
+            resize: none;
+            height: 100px;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .run-pipeline-btn {
+            background: linear-gradient(135deg, var(--color-primary), #2563eb);
+            border: none;
+            color: #ffffff;
+            padding: 0.85rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            box-shadow: var(--glow-primary);
+            margin-top: 0.5rem;
+        }
+
+        .run-pipeline-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .sim-workspace {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 1.25rem;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .pipeline-status-bar {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .pipeline-step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0.35;
+            transition: all 0.3s ease;
+        }
+
+        .pipeline-step.active { opacity: 1; }
+        .pipeline-step.completed { opacity: 0.8; }
+
+        .step-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1.5px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .pipeline-step.active .step-circle { transform: scale(1.15); }
+        .pipeline-step.triage.active .step-circle { background-color: var(--color-triage); box-shadow: var(--glow-triage); }
+        .pipeline-step.tech.active .step-circle { background-color: var(--color-tech); box-shadow: var(--glow-tech); }
+        .pipeline-step.finance.active .step-circle { background-color: var(--color-finance); box-shadow: var(--glow-finance); }
+        
+        .pipeline-step.triage.completed .step-circle { background-color: rgba(139, 92, 246, 0.2); border-color: var(--color-triage); color: var(--color-triage); }
+        .pipeline-step.tech.completed .step-circle { background-color: rgba(6, 182, 212, 0.2); border-color: var(--color-tech); color: var(--color-tech); }
+        .pipeline-step.finance.completed .step-circle { background-color: rgba(245, 158, 11, 0.2); border-color: var(--color-finance); color: var(--color-finance); }
+
+        .step-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+        }
+
+        .pipeline-step.triage .step-label { color: var(--color-triage); }
+        .pipeline-step.tech .step-label { color: var(--color-tech); }
+        .pipeline-step.finance .step-label { color: var(--color-finance); }
+
+        .pipeline-connector {
+            flex: 1;
+            height: 2px;
+            background-color: var(--border-color);
+            margin: 0 1rem;
+            position: relative;
+        }
+
+        .pipeline-connector-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(to right, var(--color-triage), var(--color-tech), var(--color-finance));
+            transition: width 0.5s ease;
+        }
+
+        .sim-results-pane {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 1rem;
+            overflow-y: auto;
+            padding-right: 0.25rem;
+        }
+
+        .sim-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-header-sim {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-header-sim h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-header-sim h3 span.dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .roof-layout-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px dashed var(--border-color);
+            min-height: 180px;
+        }
+
+        .roof-outline {
+            border: 2px solid var(--color-tech);
+            border-radius: 6px;
+            background-color: rgba(6, 182, 212, 0.05);
+            padding: 1rem;
+            position: relative;
+            transition: all 0.3s ease;
+            display: grid;
+            gap: 4px;
+            max-width: 280px;
+            width: 100%;
+            height: 130px;
+            overflow: hidden;
+        }
+
+        .roof-outline.exceeded {
+            border-color: var(--color-danger);
+            background-color: rgba(239, 68, 68, 0.05);
+        }
+
+        .roof-panel-box {
+            background-color: var(--color-tech);
+            border-radius: 2px;
+            opacity: 0.85;
+            box-shadow: 0 0 2px rgba(6, 182, 212, 0.5);
+        }
+
+        .roof-outline.exceeded .roof-panel-box {
+            background-color: var(--color-danger);
+            box-shadow: 0 0 2px rgba(239, 68, 68, 0.5);
+        }
+
+        .layout-legend {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+        }
+
+        .legend-item { display: flex; align-items: center; gap: 0.25rem; }
+        .legend-color { width: 10px; height: 10px; border-radius: 2px; }
+
+        .bom-table-wrapper { flex: 1; overflow-y: auto; }
+        table.bom-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left; }
+        table.bom-table th { font-weight: 700; color: var(--color-text-muted); border-bottom: 1px solid var(--border-color); padding: 0.5rem; }
+        table.bom-table td { border-bottom: 1px solid rgba(255,255,255,0.03); padding: 0.5rem; color: var(--color-text-main); }
+        table.bom-table tr:last-child td { border-bottom: none; }
+
+        .status-badge { font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 700; }
+        .status-badge.available { background-color: rgba(16, 185, 129, 0.15); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-badge.shortage { background-color: rgba(239, 68, 68, 0.15); color: var(--color-danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .chart-container-sim {
+            flex: 1;
+            position: relative;
+            background-color: rgba(0,0,0,0.15);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-container-sim canvas { width: 100%; height: 100%; max-height: 200px; }
+
+        .proposal-textbox {
+            flex: 1;
+            background-color: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: #d1d5db;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        .copy-btn {
+            background-color: var(--bg-surface-elevated);
+            border: 1px solid var(--border-color);
+            color: var(--color-text-main);
+            padding: 0.35rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+        .json-inspector {
+            flex: 1;
+            background-color: #05070a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--color-success);
+            overflow-y: auto;
+        }
+
+        .guardrail-alert-box {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1.5px solid var(--color-danger);
+            border-radius: 8px;
+            padding: 1rem;
+            display: none;
+            flex-direction: column;
+            gap: 0.5rem;
+            grid-column: span 2;
+            box-shadow: var(--glow-danger);
+            animation: pulse-danger 2s infinite ease-in-out;
+        }
+
+        .guardrail-alert-box.active { display: flex; }
+        .guardrail-title { font-size: 0.9rem; font-weight: 700; color: var(--color-danger); display: flex; align-items: center; gap: 0.5rem; }
+        .guardrail-desc { font-size: 0.8rem; color: var(--color-text-main); line-height: 1.4; }
+
+        .metric-badge-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+        .metric-pill {
+            background-color: var(--bg-surface-elevated);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 0.25rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--color-text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .metric-pill .dot { width: 6px; height: 6px; border-radius: 50%; }
+
+        /* Code Viewer Tabs */
+        .code-viewer-container {
+            max-width: 1200px;
+            margin: 1.5rem auto;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .code-sub-tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .code-tab {
+            padding: 0.5rem 1rem;
+            background: none;
+            border: 1px solid transparent;
+            color: var(--color-text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            transition: all 0.2s ease;
+        }
+
+        .code-tab.active {
+            border-color: var(--border-color) var(--border-color) transparent var(--border-color);
+            color: var(--color-tech);
+            background-color: var(--bg-surface-elevated);
+            font-weight: bold;
+        }
+
+        .code-box {
+            background-color: #05070a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .code-box pre {
+            margin: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: #d1d5db;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-section">
+            <div class="logo-badge">S</div>
+            <div>
+                <h1 class="logo-title">Solar Ingestion Submission Hub</h1>
+            </div>
+        </div>
+        
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('writeup')">Kaggle Writeup</button>
+            <button class="nav-tab" onclick="switchTab('presentation')">Presentation Deck</button>
+            <button class="nav-tab" onclick="switchTab('simulator')">Live Simulator</button>
+            <button class="nav-tab" onclick="switchTab('code')">Source Code</button>
+        </div>
+        
+        <div class="workspace-badge">
+            Submission Package
+        </div>
+    </header>
+
+    <main>
+        <!-- Tab 1: Kaggle Writeup -->
+        <div id="writeup-tab" class="tab-content active">
+            <div class="writeup-container">
+                <h1>Stateful Multi-Agent Solar Ingestion and Sourcing System</h1>
+                
+                <h2>1. Executive Summary and Problem Statement</h2>
+                <p>The residential and commercial solar distribution industry faces operational inefficiencies at the front-end sales and engineering funnel. Specifically, distributors face four primary friction points:</p>
+                <ul>
+                    <li><strong>Unstructured Customer Discovery:</strong> Leads arrive via messy customer emails or chat transcripts. Ingesting this data manually is slow and prone to errors.</li>
+                    <li><strong>Technical Sizing Misalignment:</strong> Sales representatives frequently quote system sizes that physically cannot fit on the customer's roof footprint, leading to engineering design loops and re-quoting.</li>
+                    <li><strong>Supply Chain Disconnect:</strong> Sourcing out-of-stock components causes delays. We solve this by implementing real-time warehouse inventory checks in the BOM pipeline.</li>
+                    <li><strong>Lifecycle ROI Financials:</strong> Industry calculators assume zero utility inflation and zero panel degradation. Our engine compounds grid inflation at 5.0% and applies a precise variable degradation curve (0.5% in Year 1, 0.25% in subsequent years).</li>
+                </ul>
+                <p><strong>The Solution:</strong> Our Multi-Agent System automates the pipeline from raw query to a custom compounding sales proposal. It integrates stateful memory state persistence with deterministic calculations and multi-tier guardrails (including location/address verification).</p>
+
+                <h2>2. Agent Architecture</h2>
+                <p>The system leverages an <strong>Orchestrator-Router Pattern</strong> with a shared state memory bank:</p>
+                
+                <div class="mer-diag">
+                    <h3 style="margin-top:0;">Pipeline Workflow</h3>
+                    <div style="font-family: monospace; font-size:0.8rem; background:rgba(0,0,0,0.3); padding:1rem; border-radius:6px; width:100%; border:1px solid var(--border-color);">
+                        [Raw Ingestion] -> TriageAgent (Extracts parameters) <br>
+                        ↳ Pre-Flight Guardrails Check (Invalid Location, Capacity Cap, Negative Space)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;↳ TechnicalAgent (Vets physical roof area constraints)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ Post-Tech Guardrails (ROOF_SPACE_EXCEEDED)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ FinancialLogisticsAgent (Selects Inverter Type, Sourcing stock, Variable ROI calculation)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ Outputs: Bill of Materials and Compounding ROI Proposal
+                    </div>
+                </div>
+
+                <h2>3. Mathematics and Deterministic Calculations</h2>
+                
+                <h3>Upgraded Footprint Sizer (625W Panel)</h3>
+                <p>We model high-power <strong>625W panels</strong> with a footprint of <strong>24.0 sq ft</strong> per panel. The system sizer executes:</p>
+                <div class="formula-box">
+                    Panels Needed = ceil(Target kW / 0.625 kW)<br>
+                    Required Footprint (sq ft) = Panels Needed * 24.0
+                </div>
+
+                <h3>Variable Degradation Lifecycle ROI Model</h3>
+                <p>Grid utility rates compound against 5.0% grid inflation. Solar generation degrades dynamically (0.5% Year 1, 0.25% in subsequent years):</p>
+                <div class="formula-box">
+                    Year 1 Gen = Capacity * 1500 kWh<br>
+                    Year y Gen (y >= 2) = (Capacity * 1500) * (1 - 0.005) * (1 - 0.0025)^(y-2)
+                </div>
+
+                <h3>Dynamic Solar/Micro Inverters Selector</h3>
+                <p>The system dynamically determines the optimal inverter technology based on target system capacity:</p>
+                <ul>
+                    <li><strong>Decentralized Microinverters (1 per panel):</strong> Chosen for systems &lt; 10 kW.</li>
+                    <li><strong>Central String Solar Inverters (1 per system):</strong> Chosen for larger or commercial systems (&ge; 10 kW).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab 2: Presentation Deck -->
+        <div id="presentation-tab" class="tab-content">
+            <div class="presentation-container">
+                <div class="slide-card" id="slide-card">
+                    <!-- Slide Content dynamically inserted -->
+                </div>
+                
+                <div class="slide-controls">
+                    <button class="slide-btn" id="prev-slide-btn" onclick="navigateSlide(-1)">◀ Previous</button>
+                    <div class="slide-indicators" id="slide-indicators">
+                        <!-- Dots -->
+                    </div>
+                    <button class="slide-btn" id="next-slide-btn" onclick="navigateSlide(1)">Next Slide ▶</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Live Simulator -->
+        <div id="simulator-tab" class="tab-content">
+            <div class="simulator-layout">
+                
+                <!-- Left Panel -->
+                <div class="sim-input-panel">
+                    <div class="panel-title">System Ingestion Engine</div>
+                    
+                    <div class="section-box">
+                        <span class="section-label">Select Demo Scenario</span>
+                        <div class="presets-grid">
+                            <button class="preset-btn active" id="preset-1" onclick="loadScenario(1)">
+                                <span class="preset-title">1. Happy Path Ingestion</span>
+                                <span class="badge-pill badge-happy">Austin, TX (6.0 kW)</span>
+                            </button>
+                            <button class="preset-btn" id="preset-2" onclick="loadScenario(2)">
+                                <span class="preset-title">2. Multi-Turn Sizing Update</span>
+                                <span class="badge-pill badge-update">Modify to 8.0 kW</span>
+                            </button>
+                            <button class="preset-btn" id="preset-3" onclick="loadScenario(3)">
+                                <span class="preset-title">3. Physical Space Boundary</span>
+                                <span class="badge-pill badge-guard">Negative space constraint</span>
+                            </button>
+                            <button class="preset-btn" id="preset-4" onclick="loadScenario(4)">
+                                <span class="preset-title">4. Sizing Footprint Shortfall</span>
+                                <span class="badge-pill badge-guard">Capacity > Roof Area</span>
+                            </button>
+                            <button class="preset-btn" id="preset-5" onclick="loadScenario(5)">
+                                <span class="preset-title">5. Sourcing Stock limit</span>
+                                <span class="badge-pill badge-guard">> 93.75 kW Warehouse cap</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="section-box">
+                        <span class="section-label">Raw Discovery Email Input</span>
+                        <textarea class="form-input" id="raw-query-input"></textarea>
+                    </div>
+
+                    <div class="section-box" style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                        <span class="section-label">Triage Override Parameters</span>
+                        
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" class="form-input" id="param-location">
+                        </div>
+                        
+                        <div class="form-input-pair">
+                            <div class="form-group">
+                                <label>Target Capacity (kW)</label>
+                                <input type="number" step="0.1" class="form-input" id="param-capacity">
+                            </div>
+                            <div class="form-group">
+                                <label>Budget ($)</label>
+                                <input type="number" class="form-input" id="param-budget">
+                            </div>
+                        </div>
+
+                        <div class="form-input-pair">
+                            <div class="form-group">
+                                <label>Utility Rate ($/kWh)</label>
+                                <input type="number" step="0.01" class="form-input" id="param-rate">
+                            </div>
+                            <div class="form-group">
+                                <label>Annual Usage (kWh)</label>
+                                <input type="number" class="form-input" id="param-usage">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Roof Footprint Space (sq ft)</label>
+                            <input type="number" class="form-input" id="param-roof">
+                        </div>
+                    </div>
+                    
+                    <button class="run-pipeline-btn" onclick="runSimulationPipeline()">Run Multi-Agent Pipeline</button>
+                </div>
+                
+                <!-- Right Panel -->
+                <div class="sim-workspace">
+                    <div class="pipeline-status-bar">
+                        <div class="pipeline-step triage" id="step-triage">
+                            <div class="step-circle">1</div>
+                            <span class="step-label">Triage Agent</span>
+                        </div>
+                        <div class="pipeline-connector"><div class="pipeline-connector-fill" id="conn-triage"></div></div>
+                        
+                        <div class="pipeline-step tech" id="step-tech">
+                            <div class="step-circle">2</div>
+                            <span class="step-label">Technical Agent</span>
+                        </div>
+                        <div class="pipeline-connector"><div class="pipeline-connector-fill" id="conn-tech"></div></div>
+                        
+                        <div class="pipeline-step finance" id="step-finance">
+                            <div class="step-circle">3</div>
+                            <span class="step-label">Financial Logistics</span>
+                        </div>
+                    </div>
+                    
+                    <div class="sim-results-pane">
+                        <div class="guardrail-alert-box" id="guardrail-box">
+                            <div class="guardrail-title">WARNING: SYSTEM GUARDRAIL ALERT (Orchestrator Halted)</div>
+                            <div class="guardrail-desc" id="guardrail-text">No active guardrails triggered.</div>
+                        </div>
+                        
+                        <div class="sim-card">
+                            <div class="card-header-sim">
+                                <h3><span class="dot" style="background-color: var(--color-tech);"></span>Technical Layout Vetting</h3>
+                                <span class="workspace-badge" id="tech-valid-badge">Valid Layout</span>
+                            </div>
+                            <div class="metric-badge-row">
+                                <div class="metric-pill">
+                                    <span class="dot" style="background-color: var(--color-tech);"></span>
+                                    <span>Footprint: <strong id="val-footprint">0</strong> sq ft</span>
+                                </div>
+                                <div class="metric-pill">
+                                    <span class="dot" style="background-color: var(--color-tech);"></span>
+                                    <span>Panels: <strong id="val-panels">0</strong> units</span>
+                                </div>
+                            </div>
+                            <div class="roof-layout-container">
+                                <div class="roof-outline" id="roof-layout-grid"></div>
+                                <div class="layout-legend">
+                                    <div class="legend-item"><div class="legend-color" style="background-color: var(--color-tech);"></div><span>Panel (24 sq ft)</span></div>
+                                    <div class="legend-item"><div class="legend-color" style="background-color: rgba(6,182,212,0.1); border:1px solid var(--color-tech);"></div><span>Roof Surface</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="sim-card">
+                            <div class="card-header-sim">
+                                <h3><span class="dot" style="background-color: var(--color-finance);"></span>Warehouse Stock & BOM</h3>
+                                <span class="workspace-badge" style="color: var(--color-finance);" id="bom-quote-badge">$0.00 Retail</span>
+                            </div>
+                            <div class="bom-table-wrapper">
+                                <table class="bom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Component</th>
+                                            <th>Req</th>
+                                            <th>Cost</th>
+                                            <th>Stock</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bom-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="sim-card">
+                            <div class="card-header-sim">
+                                <h3><span class="dot" style="background-color: var(--color-success);"></span>25-Year Compound ROI Savings</h3>
+                                <span class="workspace-badge" style="color: var(--color-success);" id="roi-payback-badge">Payback: N/A</span>
+                            </div>
+                            <div class="metric-badge-row">
+                                <div class="metric-pill">
+                                    <span class="dot" style="background-color: var(--color-success);"></span>
+                                    <span>Total: <strong id="val-net-savings">$0</strong></span>
+                                </div>
+                                <div class="metric-pill">
+                                    <span class="dot" style="background-color: var(--color-success);"></span>
+                                    <span>ROI: <strong id="val-roi-pct">0%</strong></span>
+                                </div>
+                            </div>
+                            <div class="chart-container-sim">
+                                <canvas id="roi-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="sim-card">
+                            <div class="card-header-sim">
+                                <h3><span class="dot" style="background-color: var(--color-primary);"></span>Context Bank & Proposal</h3>
+                                <button class="copy-btn" onclick="copyProposal()">Copy Proposal</button>
+                            </div>
+                            <div style="display: flex; gap: 0.75rem; flex: 1; overflow: hidden; height: 100%;">
+                                <div class="json-inspector" id="context-json-inspector"></div>
+                                <div class="proposal-textbox" id="proposal-output-box"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: Code Viewer -->
+        <div id="code-tab" class="tab-content">
+            <div class="code-viewer-container">
+                <div class="code-sub-tabs">
+                    <button class="code-tab active" onclick="switchCodeTab('solar_tools')">solar_tools.py</button>
+                    <button class="code-tab" onclick="switchCodeTab('agent_core')">agent_core.py</button>
+                    <button class="code-tab" onclick="switchCodeTab('main')">main.py</button>
+                </div>
+                
+                <div class="code-box" id="code-box-solar_tools">
+                    <pre><code>import math
+
+# Warehouse Inventory database mock
+INVENTORY_DB = {
+    "panels": {"name": "Premium 625W Monocrystalline Panel", "stock": 150, "unit_cost": 250.00},
+    "microinverters": {"name": "Smart Microinverter 625W", "stock": 100, "unit_cost": 150.00},
+    "string_inverters": {"name": "Central Solar String Inverter (Commercial)", "stock": 20, "unit_cost": 1200.00},
+    "racking": {"name": "Universal Racking Mount Kit (per panel)", "stock": 200, "unit_cost": 50.00},
+    "bos": {"name": "Balance of System (Wiring, Combiner, Breakers)", "stock": 50, "unit_cost": 400.00}
+}
+
+def calculate_required_footprint(target_kw: float, panel_efficiency: float = 0.20) -> dict:
+    """
+    Calculate the required physical footprint (sq. ft.) based on target kW capacity.
+    Standard panel specs: 625W (0.625 kW) power output, dimensions ~24 sq. ft.
+    """
+    if target_kw <= 0:
+        raise ValueError("Target capacity must be greater than 0 kW.")
+        
+    panel_wattage_kw = 0.625  # 625W
+    panel_area_sqft = 24.0    # 24 sq ft
+    
+    # Calculate number of panels needed
+    panels_needed = math.ceil(target_kw / panel_wattage_kw)
+    total_footprint_sqft = panels_needed * panel_area_sqft
+    
+    return {
+        "target_kw": target_kw,
+        "panels_needed": panels_needed,
+        "panel_wattage_w": 625,
+        "panel_area_sqft": panel_area_sqft,
+        "required_footprint_sqft": total_footprint_sqft,
+        "efficiency_used": panel_efficiency
+    }
+
+def calculate_roi(
+    kw_capacity: float, 
+    initial_investment: float, 
+    utility_rate: float, 
+    annual_usage_kwh: float, 
+    escalation_rate: float = 0.05, 
+    degradation_rate_y1: float = 0.005,
+    degradation_rate_subsequent: float = 0.0025
+) -> dict:
+    """
+    Calculate 25-year lifecycle savings and payback period.
+    Assumes standard insolation: 1 kW of solar capacity generates 1,500 kWh of energy per year.
+    Escalates grid energy costs annually (escalation_rate).
+    Degrades solar production: 0.5% in 1st year (applied at year 2), 0.25% in upcoming years (year 3+).
+    """
+    if kw_capacity <= 0 or initial_investment <= 0 or utility_rate <= 0 or annual_usage_kwh <= 0:
+        raise ValueError("All input parameters must be positive non-zero values.")
+        
+    annual_generation_base = kw_capacity * 1500.0
+    timeline = []
+    cumulative_savings = 0.0
+    payback_year = None
+    
+    for year in range(1, 26):
+        # Calculate degradation for this year
+        if year == 1:
+            generation_this_year = annual_generation_base
+        else:
+            generation_this_year = annual_generation_base * (1.0 - degradation_rate_y1) * ((1.0 - degradation_rate_subsequent) ** (year - 2))
+            
+        # Escalate grid rates
+        rate_this_year = utility_rate * ((1.0 + escalation_rate) ** (year - 1))
+        
+        # Calculate utility cost offsets
+        offset_kwh = min(generation_this_year, annual_usage_kwh)
+        export_kwh = max(0.0, generation_this_year - annual_usage_kwh)
+        
+        savings_from_offset = offset_kwh * rate_this_year
+        savings_from_export = export_kwh * (rate_this_year * 0.5)
+        annual_savings = savings_from_offset + savings_from_export
+        
+        cumulative_savings += annual_savings
+        net_position = cumulative_savings - initial_investment
+        
+        # Track when we break even
+        if net_position >= 0 and payback_year is None:
+            prev_cumulative = cumulative_savings - annual_savings
+            needed = initial_investment - prev_cumulative
+            fraction = needed / annual_savings if annual_savings > 0 else 0.0
+            payback_year = round((year - 1) + fraction, 2)
+            
+        timeline.append({
+            "year": year,
+            "solar_gen_kwh": round(generation_this_year, 1),
+            "utility_rate_per_kwh": round(rate_this_year, 4),
+            "annual_savings_usd": round(annual_savings, 2),
+            "cumulative_savings_usd": round(cumulative_savings, 2),
+            "net_position_usd": round(net_position, 2)
+        })
+        
+    net_25yr_savings = cumulative_savings - initial_investment
+    net_roi_percent = (cumulative_savings / initial_investment) * 100.0 if initial_investment > 0 else 0.0
+    
+    return {
+        "initial_investment_usd": initial_investment,
+        "annual_usage_kwh": annual_usage_kwh,
+        "base_annual_generation_kwh": annual_generation_base,
+        "escalation_rate": escalation_rate,
+        "degradation_rate_y1": degradation_rate_y1,
+        "degradation_rate_subsequent": degradation_rate_subsequent,
+        "payback_period_years": payback_year if payback_year is not None else "Never (>25 yrs)",
+        "total_25yr_savings_usd": round(cumulative_savings, 2),
+        "net_25yr_savings_usd": round(net_25yr_savings, 2),
+        "roi_percentage": round(net_roi_percent, 2),
+        "timeline": timeline
+    }
+
+def check_inventory_and_bom(target_kw: float, inverter_preference: str = "auto") -> dict:
+    """
+    Cross-reference required quantities with warehouse stocks.
+    Handles Solar Inverters / Microinverters central vs distributed logic.
+    """
+    if target_kw <= 0:
+        raise ValueError("Target capacity must be greater than 0 kW.")
+        
+    panels_needed = math.ceil(target_kw / 0.625)
+    racking_needed = panels_needed
+    bos_needed = 1
+    
+    # Determine Inverter Type
+    if inverter_preference == "micro" or (inverter_preference == "auto" and target_kw < 10.0):
+        inverter_type = "microinverter"
+        inverters_needed = panels_needed
+        inverter_db_key = "microinverters"
+        inverter_display_name = INVENTORY_DB["microinverters"]["name"]
+    else:
+        inverter_type = "string_inverter"
+        inverters_needed = 1  
+        inverter_db_key = "string_inverters"
+        inverter_display_name = INVENTORY_DB["string_inverters"]["name"]
+        
+    bom = []
+    shortage_detected = False
+    shortages = []
+    
+    # Check Panels
+    panels_stock = INVENTORY_DB["panels"]["stock"]
+    panels_cost = panels_needed * INVENTORY_DB["panels"]["unit_cost"]
+    panels_status = "Available"
+    if panels_needed > panels_stock:
+        panels_status = f"Shortage (Needs {panels_needed}, Only {panels_stock} in stock)"
+        shortage_detected = True
+        shortages.append(f"Solar Panels (Short by {panels_needed - panels_stock})")
+    bom.append({
+        "item": "Panels",
+        "name": INVENTORY_DB["panels"]["name"],
+        "required": panels_needed,
+        "in_stock": panels_stock,
+        "unit_cost_usd": INVENTORY_DB["panels"]["unit_cost"],
+        "total_cost_usd": panels_cost,
+        "status": panels_status
+    })
+    
+    # Check Inverters
+    inverters_stock = INVENTORY_DB[inverter_db_key]["stock"]
+    inverters_cost = inverters_needed * INVENTORY_DB[inverter_db_key]["unit_cost"]
+    inverters_status = "Available"
+    if inverters_needed > inverters_stock:
+        inverters_status = f"Shortage (Needs {inverters_needed}, Only {inverters_stock} in stock)"
+        shortage_detected = True
+        shortages.append(f"Inverters (Short by {inverters_needed - inverters_stock})")
+    bom.append({
+        "item": "Solar Inverters / Microinverters",
+        "name": inverter_display_name,
+        "required": inverters_needed,
+        "in_stock": inverters_stock,
+        "unit_cost_usd": INVENTORY_DB[inverter_db_key]["unit_cost"],
+        "total_cost_usd": inverters_cost,
+        "status": inverters_status
+    })
+    
+    # Check Racking
+    racking_stock = INVENTORY_DB["racking"]["stock"]
+    racking_cost = racking_needed * INVENTORY_DB["racking"]["unit_cost"]
+    racking_status = "Available"
+    if racking_needed > racking_stock:
+        racking_status = f"Shortage (Needs {racking_needed}, Only {racking_stock} in stock)"
+        shortage_detected = True
+        shortages.append(f"Racking kits (Short by {racking_needed - racking_stock})")
+    bom.append({
+        "item": "Racking",
+        "name": INVENTORY_DB["racking"]["name"],
+        "required": racking_needed,
+        "in_stock": racking_stock,
+        "unit_cost_usd": INVENTORY_DB["racking"]["unit_cost"],
+        "total_cost_usd": racking_cost,
+        "status": racking_status
+    })
+    
+    # Check Balance of System (BOS)
+    bos_stock = INVENTORY_DB["bos"]["stock"]
+    bos_cost = bos_needed * INVENTORY_DB["bos"]["unit_cost"]
+    bos_status = "Available"
+    if bos_needed > bos_stock:
+        bos_status = f"Shortage (Needs {bos_needed}, Only {bos_stock} in stock)"
+        shortage_detected = True
+        shortages.append(f"BOS kits (Short by {bos_needed - bos_stock})")
+    bom.append({
+        "item": "BOS",
+        "name": INVENTORY_DB["bos"]["name"],
+        "required": bos_needed,
+        "in_stock": bos_stock,
+        "unit_cost_usd": INVENTORY_DB["bos"]["unit_cost"],
+        "total_cost_usd": bos_cost,
+        "status": bos_status
+    })
+    
+    hardware_cost = panels_cost + inverters_cost + racking_cost + bos_cost
+    labor_cost = 1200.00 + (150.00 * panels_needed)
+    permit_fees = 800.00
+    subtotal = hardware_cost + labor_cost + permit_fees
+    distributor_markup = subtotal * 0.30
+    total_retail_quote = subtotal + distributor_markup
+    
+    return {
+        "target_kw": target_kw,
+        "bom": bom,
+        "hardware_cost_usd": round(hardware_cost, 2),
+        "labor_cost_usd": round(labor_cost, 2),
+        "permits_and_engineering_usd": round(permit_fees, 2),
+        "subtotal_cost_usd": round(subtotal, 2),
+        "markup_usd": round(distributor_markup, 2),
+        "total_retail_quote_usd": round(total_retail_quote, 2),
+        "shortage_detected": shortage_detected,
+        "shortages": shortages
+    }</code></pre>
+                </div>
+
+                <div class="code-box" id="code-box-agent_core" style="display:none;">
+                    <pre><code>import os
+import re
+import json
+from typing import Dict, Any, List, Optional
+from pydantic import BaseModel, Field
+import solar_tools
+
+try:
+    from google import genai
+    from google.genai import types
+    SDK_AVAILABLE = True
+except ImportError:
+    SDK_AVAILABLE = False
+
+class SolarTriageSchema(BaseModel):
+    system_size_kw: Optional[float] = Field(None, description="Target capacity in kW.")
+    budget_usd: Optional[float] = Field(None, description="Customer budget.")
+    location: Optional[str] = Field(None, description="Valid address or city/state.")
+    utility_rate_kwh: Optional[float] = Field(None, description="Utility rate per kWh.")
+    annual_usage_kwh: Optional[float] = Field(None, description="Annual energy usage.")
+    roof_space_sqft: Optional[float] = Field(None, description="Available roof space.")
+    notes: Optional[str] = Field(None, description="General preferences.")
+
+class InMemoryContextBank:
+    def __init__(self):
+        self.session_id: str = "session_001"
+        self.raw_query: str = ""
+        self.triage_data: Dict[str, Any] = {}
+        self.technical_data: Dict[str, Any] = {}
+        self.financial_logistics_data: Dict[str, Any] = {}
+        self.history: List[Dict[str, str]] = []
+        self.validation_errors: List[str] = []
+        self.status: str = "INIT"
+
+    def add_to_history(self, role: str, content: str):
+        self.history.append({"role": role, "content": content})
+
+    def update_triage(self, data: Dict[str, Any]):
+        for k, v in data.items():
+            if v is not None:
+                self.triage_data[k] = v
+
+    def clear_errors(self):
+        self.validation_errors = []
+
+    def add_error(self, err: str):
+        if err not in self.validation_errors:
+            self.validation_errors.append(err)
+
+class TriageAgent:
+    def __init__(self, client: Optional[Any] = None):
+        self.client = client
+
+    def process(self, query: str, context: InMemoryContextBank) -> Dict[str, Any]:
+        extracted = {}
+        if SDK_AVAILABLE and self.client and os.environ.get("GEMINI_API_KEY"):
+            try:
+                prompt = f"Analyze query and extract: system_size_kw, budget_usd, location, utility_rate_kwh, annual_usage_kwh, roof_space_sqft. Query: {query}"
+                response = self.client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        response_schema=SolarTriageSchema,
+                        system_instruction="You are an expert sales ingestion agent."
+                    )
+                )
+                extracted = json.loads(response.text)
+            except Exception:
+                extracted = self._regex_fallback(query)
+        else:
+            extracted = self._regex_fallback(query)
+        context.update_triage(extracted)
+        context.status = "TRIAGED"
+        return extracted
+
+    def _regex_fallback(self, query: str) -> Dict[str, Any]:
+        data = {"system_size_kw": None, "budget_usd": None, "location": None, "utility_rate_kwh": None, "annual_usage_kwh": None, "roof_space_sqft": None}
+        loc_match = re.search(r"in\s+([A-Za-z\s,.-]{3,30})(?=\.|\bin\b|\bwith\b|\band\b|\bmy\b|\bfor\b)", query, re.IGNORECASE)
+        if loc_match:
+            loc = loc_match.group(1).strip()
+            if loc.endswith(".") or loc.endswith(","):
+                loc = loc[:-1].strip()
+            data["location"] = loc
+        # Capacity
+        kw_match = re.search(r"(-?\d+(\.\d+)?)\s*k[wW](?![hH])", query)
+        if kw_match: data["system_size_kw"] = float(kw_match.group(1))
+        # Rate
+        rate_match = re.search(r"(?:pay|rate)?\s*\$\s*(0\.\d+)\s*/\s*k[wW]h", query, re.IGNORECASE)
+        if rate_match: data["utility_rate_kwh"] = float(rate_match.group(1))
+        # Budget
+        all_dollars = re.finditer(r"\$\s*(-?\d{1,3}(?:,\d{3})*(?:\.\d+)?)", query)
+        for match in all_dollars:
+            val = float(match.group(1).replace(",", ""))
+            if val > 5.0: data["budget_usd"] = val
+        # Usage
+        usage_match = re.search(r"(\d{1,3}(,\d{3})*)\s*k[wW]h\s*(?:annually|annual|year)", query, re.IGNORECASE)
+        if usage_match: data["annual_usage_kwh"] = float(usage_match.group(1).replace(",", ""))
+        # Roof Space
+        roof_match = re.search(r"(-?\d{1,5}(,\d{3})*)\s*(?:sq\s*ft|square\s*feet)", query, re.IGNORECASE)
+        if roof_match: data["roof_space_sqft"] = float(roof_match.group(1).replace(",", ""))
+        return data
+
+class TechnicalAgent:
+    def __init__(self, client: Optional[Any] = None):
+        self.client = client
+
+    def process(self, context: InMemoryContextBank) -> Dict[str, Any]:
+        triage = context.triage_data
+        target_kw = triage.get("system_size_kw", 5.0)
+        roof_space = triage.get("roof_space_sqft")
+        
+        footprint_res = solar_tools.calculate_required_footprint(target_kw)
+        required_sqft = footprint_res["required_footprint_sqft"]
+        panels_needed = footprint_res["panels_needed"]
+        
+        valid = True
+        if roof_space is not None and required_sqft > roof_space:
+            valid = False
+            context.add_error("ROOF_SPACE_EXCEEDED")
+            
+        tech_data = {"required_footprint_sqft": required_sqft, "panels_needed": panels_needed, "panel_wattage_w": 625, "constraints_valid": valid, "technical_notes": "fits" if valid else "exceeded"}
+        context.technical_data = tech_data
+        return tech_data
+
+class FinancialLogisticsAgent:
+    def __init__(self, client: Optional[Any] = None):
+        self.client = client
+
+    def process(self, context: InMemoryContextBank) -> Dict[str, Any]:
+        triage = context.triage_data
+        target_kw = triage.get("system_size_kw", 5.0)
+        utility_rate = triage.get("utility_rate_kwh", 0.23)
+        annual_usage = triage.get("annual_usage_kwh", 10000.0)
+        
+        bom_res = solar_tools.check_inventory_and_bom(target_kw)
+        initial_investment = bom_res["total_retail_quote_usd"]
+        
+        roi_res = solar_tools.calculate_roi(target_kw, initial_investment, utility_rate, annual_usage)
+        if bom_res["shortage_detected"]:
+            context.add_error("WAREHOUSE_SHORTAGE")
+            
+        fin_log = {"bom_details": bom_res, "roi_details": roi_res, "quote_summary_usd": initial_investment, "payback_period_years": roi_res["payback_period_years"], "net_25yr_savings_usd": roi_res["net_25yr_savings_usd"], "roi_percentage": roi_res["roi_percentage"]}
+        context.financial_logistics_data = fin_log
+        
+        proposal = f"""### Sizing Summary
+Capacity: {target_kw:.2f} kW. Investment: ${initial_investment:,.2f}. 25-Yr Savings: ${roi_res['net_25yr_savings_usd']:,.2f}."""
+        fin_log["proposal_narrative"] = proposal
+        context.status = "COMPLETE" if not context.validation_errors else "ERROR"
+        return fin_log
+
+class SolarOrchestrator:
+    def __init__(self):
+        self.context = InMemoryContextBank()
+        self.triage_agent = TriageAgent()
+        self.technical_agent = TechnicalAgent()
+        self.fin_agent = FinancialLogisticsAgent()
+
+    def receive_query(self, user_query: str) -> str:
+        self.context.raw_query = user_query
+        self.context.clear_errors()
+        self.triage_agent.process(user_query, self.context)
+        self._run_pre_flight_guardrails()
+        if self.context.validation_errors: return "Halted on guardrails"
+        self.technical_agent.process(self.context)
+        self.fin_agent.process(self.context)
+        return "Complete"
+
+    def _check_real_location(self, location: str) -> bool:
+        if not location: return False
+        loc = location.strip().lower()
+        if loc in ["unknown", "none", "null", "undefined"]: return False
+        if any(w in loc for w in ["house", "roof", "solar"]): return False
+        return len(loc) >= 3
+
+    def _run_pre_flight_guardrails(self):
+        triage = self.context.triage_data
+        location = triage.get("location")
+        if location is not None and location != "":
+            loc_lower = location.strip().lower()
+            if loc_lower not in ["unknown", "none", "null", "undefined"]:
+                if not self._check_real_location(location):
+                    self.context.add_error("INVALID_LOCATION")
+        kw = triage.get("system_size_kw")
+        if kw and kw > 93.75:
+            self.context.add_error("CAPACITY_EXCEEDS_WAREHOUSE_LIMIT")</code></pre>
+                </div>
+
+                <div class="code-box" id="code-box-main" style="display:none;">
+                    <pre><code>import sys
+from agent_core import SolarOrchestrator
+
+def main():
+    print("Running solar tests...")
+    orchestrator = SolarOrchestrator()
+    email = "I want a 6.0 kW system at my house in Austin, Texas. Roof is 600 sq ft, utility $0.18/kWh, annual use 12000 kWh, budget $20000."
+    response = orchestrator.receive_query(email)
+    print("Response:", response)
+
+if __name__ == "__main__":
+    main()</code></pre>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Scenario Preset Data
+        const SCENARIOS = {
+            1: {
+                query: "Dear Solar Distributor, I am looking to install a solar setup at my house in Austin, Texas. My roof is roughly 600 sq ft. I pay $0.18/kWh to the utility and use about 12,000 kWh annually. I want a 6.0 kW system capacity. My budget is $20,000.",
+                location: "Austin, Texas",
+                capacity: 6.0,
+                budget: 20000,
+                rate: 0.18,
+                usage: 12000,
+                roof: 600,
+                isUpdate: false
+            },
+            2: {
+                query: "Actually, my neighbor said I should get an 8.0 kW system instead. Can we update the capacity to 8.0 kW and recalculate the ROI and Bill of Materials?",
+                location: "Austin, Texas",
+                capacity: 8.0,
+                budget: 20000,
+                rate: 0.18,
+                usage: 12000,
+                roof: 600,
+                isUpdate: true
+            },
+            3: {
+                query: "Hello, I need a standard 5.0 kW solar capacity system, but my roof area is -400 sq ft. Please send a quote.",
+                location: "Unknown",
+                capacity: 5.0,
+                budget: 15000,
+                rate: 0.23,
+                usage: 10000,
+                roof: -400,
+                isUpdate: false
+            },
+            4: {
+                query: "Hi, I want a large 15.0 kW solar capacity system. My roof space is only 300 sq ft. I pay $0.22/kWh and use 20,000 kWh annually. Can you build this?",
+                location: "Unknown",
+                capacity: 15.0,
+                budget: 45000,
+                rate: 0.22,
+                usage: 20000,
+                roof: 300,
+                isUpdate: false
+            },
+            5: {
+                query: "Good afternoon. We need a commercial 100.0 kW system for our warehouse in San Jose. We have plenty of space (10,000 sq ft) and a budget of $150,000. Send over the invoice.",
+                location: "San Jose",
+                capacity: 100.0,
+                budget: 150000,
+                rate: 0.23,
+                usage: 95000,
+                roof: 10000,
+                isUpdate: false
+            }
+        };
+
+        const SLIDES = [
+            {
+                tag: "The Pitch",
+                title: "Industry Friction Points and Sizing Upgrades",
+                body: `
+                    <ul>
+                        <li><strong>Unstructured Lead Discovery:</strong> Conversational lead ingestion processed into structured variables automatically.</li>
+                        <li><strong>Technical Layout Bottleneck:</strong> Eliminates engineer overhead by calculating required footprints at sales intake.</li>
+                        <li><strong>Inverter Sizing Optimization:</strong> Expands inverters sourcing to choose central string inverters or decentralized microinverters based on target capacities.</li>
+                        <li><strong>Compound Lifecycle Financials:</strong> Models utility grid inflation (5% annual escalation) against variable efficiency degradation rates.</li>
+                    </ul>
+                `
+            },
+            {
+                tag: "Architecture",
+                title: "Multi-Agent Router and Stateful Context Bank",
+                body: `
+                    <p>The system leverages an <strong>Orchestrator-Router Pattern</strong> with a shared memory context:</p>
+                    <div class="slide-visual-arch">
+                        <div class="arch-node triage">
+                            <h4>TriageAgent</h4>
+                            <p>Parses lead content. Extracts parameters. Runs location validation checks.</p>
+                        </div>
+                        <div class="arch-arrow"></div>
+                        <div class="arch-node tech">
+                            <h4>TechnicalAgent</h4>
+                            <p>Acts as layout engineer. Vets physical capacity constraints using required roof area models (24 sq ft / panel).</p>
+                        </div>
+                        <div class="arch-arrow"></div>
+                        <div class="arch-node finance">
+                            <h4>FinancialLogistics</h4>
+                            <p>Resolves inverters, compiles BOM, builds 25-year compounding ROI model, and drafts quote email.</p>
+                        </div>
+                    </div>
+                `
+            }
+        ];
+
+        let currentSlide = 0;
+        let activeTab = 'writeup';
+        let memoryBankState = { status: "INIT", triage_data: {}, technical_data: {}, financial_logistics_data: {}, validation_errors: [] };
+        let warehouseInventory = {
+            panels: { name: "Premium 625W Monocrystalline Panel", stock: 150, unit_cost: 250.00 },
+            microinverters: { name: "Smart Microinverter 625W", stock: 100, unit_cost: 150.00 },
+            string_inverters: { name: "Central Solar String Inverter (Commercial)", stock: 20, unit_cost: 1200.00 },
+            racking: { name: "Universal Racking Mount Kit (per panel)", stock: 200, unit_cost: 50.00 },
+            bos: { name: "Balance of System (Wiring, Combiner, Breakers)", stock: 50, unit_cost: 400.00 }
+        };
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+            document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            const btnIdx = { 'writeup': 0, 'presentation': 1, 'simulator': 2, 'code': 3 }[tabName];
+            document.querySelectorAll('.nav-tab')[btnIdx].classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            if (tabName === 'simulator') {
+                if (memoryBankState.status === "COMPLETE") {
+                    const fin = memoryBankState.financial_logistics_data;
+                    const tech = memoryBankState.technical_data;
+                    const triage = memoryBankState.triage_data;
+                    setTimeout(() => {
+                        renderRoofLayout(tech.panels_needed, tech.required_footprint_sqft, triage.roof_space_sqft, tech.constraints_valid);
+                        renderBOMTable(fin.bom, fin.total_retail_quote_usd);
+                        renderROILineChart(fin.timeline, fin.total_retail_quote_usd);
+                    }, 50);
+                } else {
+                    setTimeout(() => runSimulationPipeline(), 100);
+                }
+            }
+        }
+
+        function switchCodeTab(file) {
+            document.querySelectorAll('.code-tab').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.code-box').forEach(box => box.style.display = 'none');
+            
+            const tabBtn = Array.from(document.querySelectorAll('.code-tab')).find(b => b.textContent.includes(file));
+            tabBtn.classList.add('active');
+            document.getElementById(`code-box-${file}`).style.display = 'block';
+        }
+
+        // Slide logic
+        function renderSlide() {
+            const slide = SLIDES[currentSlide];
+            const container = document.getElementById('slide-card');
+            container.innerHTML = `
+                <div>
+                    <div class="slide-header">
+                        <span class="slide-tag">${slide.tag}</span>
+                        <span class="slide-number">Slide ${currentSlide + 1} of ${SLIDES.length}</span>
+                    </div>
+                    <h2 class="slide-title">${slide.title}</h2>
+                    <div class="slide-body">${slide.body}</div>
+                </div>
+            `;
+
+            const indicatorsContainer = document.getElementById('slide-indicators');
+            indicatorsContainer.innerHTML = '';
+            SLIDES.forEach((_, idx) => {
+                const dot = document.createElement('div');
+                dot.className = `indicator-dot ${idx === currentSlide ? 'active' : ''}`;
+                dot.onclick = () => { currentSlide = idx; renderSlide(); };
+                indicatorsContainer.appendChild(dot);
+            });
+
+            document.getElementById('prev-slide-btn').disabled = currentSlide === 0;
+            document.getElementById('next-slide-btn').disabled = currentSlide === SLIDES.length - 1;
+        }
+
+        function navigateSlide(dir) {
+            currentSlide = Math.max(0, Math.min(SLIDES.length - 1, currentSlide + dir));
+            renderSlide();
+        }
+
+        // Load simulator scenario
+        function loadScenario(num) {
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`preset-${num}`).classList.add('active');
+            
+            const scenario = SCENARIOS[num];
+            if (scenario.isUpdate) {
+                document.getElementById('raw-query-input').value = scenario.query;
+                document.getElementById('param-capacity').value = scenario.capacity;
+            } else {
+                document.getElementById('raw-query-input').value = scenario.query;
+                document.getElementById('param-location').value = scenario.location;
+                document.getElementById('param-capacity').value = scenario.capacity;
+                document.getElementById('param-budget').value = scenario.budget;
+                document.getElementById('param-rate').value = scenario.rate;
+                document.getElementById('param-usage').value = scenario.usage;
+                document.getElementById('param-roof').value = scenario.roof;
+                
+                memoryBankState = { status: "INIT", triage_data: {}, technical_data: {}, financial_logistics_data: {}, validation_errors: [] };
+            }
+            runSimulationPipeline();
+        }
+
+        function isValidLocation(location) {
+            if (!location) return false;
+            const locLower = location.trim().toLowerCase();
+            if (["unknown", "none", "null", "undefined", "narnia", "fake"].includes(locLower)) return false;
+            const nonGeoWords = ["house", "roof", "setup", "solar", "budget", "system", "home", "building", "warehouse"];
+            const words = locLower.split(/[\s,.-]+/).filter(w => w.trim());
+            if (words.length === 0) return false;
+            if (words.some(w => nonGeoWords.includes(w))) return false;
+            return location.trim().length >= 3;
+        }
+
+        function runSimulationPipeline() {
+            const query = document.getElementById('raw-query-input').value;
+            const location = document.getElementById('param-location').value || "Unknown";
+            const target_kw = parseFloat(document.getElementById('param-capacity').value) || 0;
+            const budget = parseFloat(document.getElementById('param-budget').value) || 0;
+            const rate = parseFloat(document.getElementById('param-rate').value) || 0;
+            const usage = parseFloat(document.getElementById('param-usage').value) || 0;
+            const roof = parseFloat(document.getElementById('param-roof').value) || 0;
+
+            const isUpdate = (memoryBankState.status !== "INIT" && (query.toLowerCase().includes("change") || query.toLowerCase().includes("update") || query.toLowerCase().includes("instead")));
+
+            const stepTriage = document.getElementById('step-triage');
+            const stepTech = document.getElementById('step-tech');
+            const stepFinance = document.getElementById('step-finance');
+            const connTriage = document.getElementById('conn-triage');
+            const connTech = document.getElementById('conn-tech');
+            
+            stepTriage.className = "pipeline-step triage active";
+            stepTech.className = "pipeline-step tech";
+            stepFinance.className = "pipeline-step finance";
+            connTriage.style.width = "0%";
+            connTech.style.width = "0%";
+            
+            document.getElementById('guardrail-box').classList.remove('active');
+            
+            // --- Ingestion ---
+            setTimeout(() => {
+                stepTriage.className = "pipeline-step triage completed";
+                connTriage.style.width = "100%";
+                stepTech.className = "pipeline-step tech active";
+                
+                if (isUpdate) {
+                    memoryBankState.triage_data.system_size_kw = target_kw;
+                } else {
+                    memoryBankState.triage_data = { system_size_kw: target_kw, budget_usd: budget, location: location, utility_rate_kwh: rate, annual_usage_kwh: usage, roof_space_sqft: roof };
+                }
+                memoryBankState.validation_errors = [];
+                
+                // Guardrails
+                const locVal = memoryBankState.triage_data.location;
+                if (locVal && locVal.trim() !== "" && !["unknown", "none", "null", "undefined"].includes(locVal.trim().toLowerCase())) {
+                    if (!isValidLocation(locVal)) {
+                        memoryBankState.validation_errors.push("INVALID_LOCATION");
+                    }
+                }
+                if (memoryBankState.triage_data.system_size_kw <= 0) {
+                    memoryBankState.validation_errors.push("ANOMALOUS_NEGATIVE_CAPACITY");
+                } else if (memoryBankState.triage_data.system_size_kw > 93.75) {
+                    memoryBankState.validation_errors.push("CAPACITY_EXCEEDS_WAREHOUSE_LIMIT");
+                }
+                if (memoryBankState.triage_data.roof_space_sqft <= 0) {
+                    memoryBankState.validation_errors.push("ANOMALOUS_NEGATIVE_ROOF");
+                } else if (memoryBankState.triage_data.roof_space_sqft > 15000) {
+                    memoryBankState.validation_errors.push("ANOMALOUS_EXCESSIVE_ROOF");
+                }
+                if (memoryBankState.triage_data.budget_usd <= 0) {
+                    memoryBankState.validation_errors.push("ANOMALOUS_NEGATIVE_BUDGET");
+                }
+
+                if (memoryBankState.validation_errors.length > 0) {
+                    handleHalt();
+                    return;
+                }
+                
+                // --- Tech agent ---
+                setTimeout(() => {
+                    stepTech.className = "pipeline-step tech completed";
+                    connTech.style.width = "100%";
+                    stepFinance.className = "pipeline-step finance active";
+                    
+                    const panelsNeeded = Math.ceil(memoryBankState.triage_data.system_size_kw / 0.625);
+                    const requiredFootprint = panelsNeeded * 24.0;
+                    
+                    let layoutValid = true;
+                    if (memoryBankState.triage_data.roof_space_sqft !== null && requiredFootprint > memoryBankState.triage_data.roof_space_sqft) {
+                        layoutValid = false;
+                        memoryBankState.validation_errors.push("ROOF_SPACE_EXCEEDED");
+                    }
+                    
+                    memoryBankState.technical_data = { required_footprint_sqft: requiredFootprint, panels_needed: panelsNeeded, panel_wattage_w: 625, constraints_valid: layoutValid };
+                    renderRoofLayout(panelsNeeded, requiredFootprint, memoryBankState.triage_data.roof_space_sqft, layoutValid);
+
+                    if (memoryBankState.validation_errors.length > 0) {
+                        handleHalt();
+                        return;
+                    }
+                    
+                    // --- Finance agent ---
+                    setTimeout(() => {
+                        stepFinance.className = "pipeline-step finance completed";
+                        
+                        let inverterType = "microinverter";
+                        let invertersNeeded = panelsNeeded;
+                        let inverterDbKey = "microinverters";
+                        let inverterDisplayName = warehouseInventory.microinverters.name;
+                        
+                        if (memoryBankState.triage_data.system_size_kw >= 10.0) {
+                            inverterType = "string_inverter";
+                            invertersNeeded = 1;
+                            inverterDbKey = "string_inverters";
+                            inverterDisplayName = warehouseInventory.string_inverters.name;
+                        }
+                        
+                        const panelsCost = panelsNeeded * warehouseInventory.panels.unit_cost;
+                        const invertersCost = invertersNeeded * warehouseInventory[inverterDbKey].unit_cost;
+                        const rackingCost = panelsNeeded * warehouseInventory.racking.unit_cost;
+                        const bosCost = 1 * warehouseInventory.bos.unit_cost;
+                        const hardwareCost = panelsCost + invertersCost + rackingCost + bosCost;
+                        
+                        const laborCost = 1200 + (150 * panelsNeeded);
+                        const permitFees = 800;
+                        const subtotal = hardwareCost + laborCost + permitFees;
+                        const distributorMarkup = subtotal * 0.30;
+                        const totalRetailQuote = subtotal + distributorMarkup;
+                        
+                        const bom = [
+                            { item: "Panels", name: warehouseInventory.panels.name, required: panelsNeeded, status: "Available", cost: panelsCost },
+                            { item: "Solar Inverters / Microinverters", name: inverterDisplayName, required: invertersNeeded, status: "Available", cost: invertersCost },
+                            { item: "Racking", name: warehouseInventory.racking.name, required: panelsNeeded, status: "Available", cost: rackingCost },
+                            { item: "BOS", name: warehouseInventory.bos.name, required: 1, status: "Available", cost: bosCost }
+                        ];
+                        
+                        const annualGenBase = memoryBankState.triage_data.system_size_kw * 1500;
+                        let cumulativeSavings = 0;
+                        let paybackYear = null;
+                        const timeline = [];
+                        
+                        for (let year = 1; year <= 25; year++) {
+                            let genThisYear = year === 1 ? annualGenBase : annualGenBase * (1 - 0.005) * Math.pow(1 - 0.0025, year - 2);
+                            const rateThisYear = memoryBankState.triage_data.utility_rate_kwh * Math.pow(1 + 0.05, year - 1);
+                            
+                            const offsetKwh = Math.min(genThisYear, memoryBankState.triage_data.annual_usage_kwh);
+                            const exportKwh = Math.max(0, genThisYear - memoryBankState.triage_data.annual_usage_kwh);
+                            
+                            const savingsOffset = offsetKwh * rateThisYear;
+                            const savingsExport = exportKwh * (rateThisYear * 0.5);
+                            const annualSavings = savingsOffset + savingsExport;
+                            
+                            cumulativeSavings += annualSavings;
+                            const netPosition = cumulativeSavings - totalRetailQuote;
+                            
+                            if (netPosition >= 0 && paybackYear === null) {
+                                paybackYear = ((year - 1) + (totalRetailQuote - (cumulativeSavings - annualSavings)) / annualSavings).toFixed(2);
+                            }
+                            
+                            timeline.push({ year, netPosition, annualSavings });
+                        }
+                        
+                        const netSavings = cumulativeSavings - totalRetailQuote;
+                        const roiPercentage = ((cumulativeSavings / totalRetailQuote) * 100).toFixed(2);
+                        
+                        memoryBankState.financial_logistics_data = { bom, hardware_cost_usd: hardwareCost, labor_cost_usd: laborCost, permits_fees_usd: permitFees, total_retail_quote_usd: totalRetailQuote, payback_period_years: paybackYear || "Never", total_25yr_savings_usd: cumulativeSavings, net_25yr_savings_usd: netSavings, roi_percentage: roiPercentage, timeline };
+                        memoryBankState.status = "COMPLETE";
+                        
+                        document.getElementById('tech-valid-badge').textContent = "Valid Sizing";
+                        document.getElementById('tech-valid-badge').className = "workspace-badge";
+                        document.getElementById('tech-valid-badge').style.borderColor = "var(--color-success)";
+                        document.getElementById('tech-valid-badge').style.color = "var(--color-success)";
+                        
+                        document.getElementById('bom-quote-badge').textContent = `$${totalRetailQuote.toLocaleString('en-US', {minimumFractionDigits: 2})} Quote`;
+                        renderBOMTable(bom, totalRetailQuote);
+                        
+                        document.getElementById('roi-payback-badge').textContent = `Payback: ${paybackYear} Yrs`;
+                        document.getElementById('val-net-savings').textContent = `$${netSavings.toLocaleString('en-US', {maximumFractionDigits:0})}`;
+                        document.getElementById('val-roi-pct').textContent = `${roiPercentage}%`;
+                        
+                        renderROILineChart(timeline, totalRetailQuote);
+                        document.getElementById('proposal-output-box').textContent = generateProposalText(memoryBankState.triage_data, memoryBankState.technical_data, memoryBankState.financial_logistics_data);
+                        updateJSONInspector();
+                    }, 400);
+                }, 400);
+            }, 400);
+        }
+
+        function handleHalt() {
+            document.getElementById('tech-valid-badge').textContent = "Pipeline Halted";
+            document.getElementById('tech-valid-badge').className = "workspace-badge";
+            document.getElementById('tech-valid-badge').style.borderColor = "var(--color-danger)";
+            document.getElementById('tech-valid-badge').style.color = "var(--color-danger)";
+            
+            const alertTextNodes = [];
+            memoryBankState.validation_errors.forEach(err => {
+                if (err === "INVALID_LOCATION") alertTextNodes.push("* **Location Verification Exception:** Invalid physical place or address.");
+                if (err === "ANOMALOUS_NEGATIVE_CAPACITY") alertTextNodes.push("* **Capacity Limit Exception:** Negative capacity kW was entered.");
+                if (err === "CAPACITY_EXCEEDS_WAREHOUSE_LIMIT") alertTextNodes.push("* **Warehouse Supply Limit Exceeded:** Capacity exceeds 93.75 kW.");
+                if (err === "ANOMALOUS_NEGATIVE_ROOF") alertTextNodes.push("* **Physical Space Exception:** Negative roof space.");
+                if (err === "ROOF_SPACE_EXCEEDED") alertTextNodes.push(`* **Sizing Footprint Shortfall:** Sizing footprint exceeds roof space.`);
+            });
+            
+            const errorHtml = `
+                <div class="guardrail-title">WARNING: SYSTEM GUARDRAIL ALERT (Orchestrator Halted)</div>
+                <div class="guardrail-desc">${alertTextNodes.join('<br>')}</div>
+            `;
+            
+            const alertBox = document.getElementById('guardrail-box');
+            alertBox.innerHTML = errorHtml;
+            alertBox.classList.add('active');
+            
+            document.getElementById('proposal-output-box').textContent = `Halted due to guardrails.`;
+            document.getElementById('bom-table-body').innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--color-danger);">Aborted</td></tr>`;
+            clearCanvas();
+            updateJSONInspector();
+        }
+
+        function renderRoofLayout(panels, reqFt, availFt, isValid) {
+            const grid = document.getElementById('roof-layout-grid');
+            grid.innerHTML = '';
+            document.getElementById('val-footprint').textContent = reqFt;
+            document.getElementById('val-panels').textContent = panels;
+            
+            if (availFt <= 0 || !isValid) {
+                grid.className = "roof-outline exceeded";
+                return;
+            }
+            grid.className = "roof-outline";
+            let cols = 5;
+            let rows = Math.ceil(panels / cols);
+            grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            
+            const gridCellsCount = cols * rows;
+            for (let i = 0; i < gridCellsCount; i++) {
+                const cell = document.createElement('div');
+                cell.className = "roof-panel-box";
+                grid.appendChild(cell);
+            }
+        }
+
+        // BOM Sourced rendering
+        function renderBOMTable(bom, totalRetailQuote) {
+            const tbody = document.getElementById('bom-table-body');
+            tbody.innerHTML = '';
+            bom.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td><strong>${item.item}</strong><br><span style="font-size:0.7rem;">${item.name}</span></td><td>${item.required}</td><td>$${item.cost.toLocaleString()}</td><td><span class="status-badge available">In Stock</span></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Compounding Line Chart in HTML Canvas
+        function renderROILineChart(timeline, initialInvestment) {
+            const canvas = document.getElementById('roi-chart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentNode.getBoundingClientRect().width;
+            canvas.height = 160;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 20;
+            
+            const yMin = -initialInvestment;
+            const yMax = timeline[timeline.length - 1].netPosition;
+            
+            function getX(year) { return padding + ((year - 1) / 24) * (width - 2 * padding); }
+            function getY(val) { return height - padding - ((val - yMin) / (yMax - yMin)) * (height - 2 * padding); }
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            // Baseline
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.beginPath();
+            ctx.moveTo(padding, getY(0));
+            ctx.lineTo(width - padding, getY(0));
+            ctx.stroke();
+            
+            // Line
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(getX(1), getY(timeline[0].netPosition));
+            for (let i = 1; i < timeline.length; i++) {
+                ctx.lineTo(getX(timeline[i].year), getY(timeline[i].netPosition));
+            }
+            ctx.stroke();
+        }
+
+        function generateProposalText(triage, tech, fin) {
+            return `Solar Sizing Proposal\nLocation: ${triage.location}\nCapacity: ${triage.system_size_kw.toFixed(2)} kW\nInvestment: $${fin.total_retail_quote_usd.toLocaleString('en-US', {minimumFractionDigits: 2})}\nPayback Period: ${fin.payback_period_years} Years\n25-Yr ROI Savings: $${fin.net_25yr_savings_usd.toLocaleString('en-US', {minimumFractionDigits:2})}`;
+        }
+
+        function copyProposal() {
+            navigator.clipboard.writeText(document.getElementById('proposal-output-box').textContent);
+            alert('Proposal copied!');
+        }
+
+        function updateJSONInspector() {
+            document.getElementById('context-json-inspector').textContent = JSON.stringify(memoryBankState, null, 2);
+        }
+
+        // Init
+        renderSlide();
+        loadScenario(1);
+    </script>
+</body>
+</html>
